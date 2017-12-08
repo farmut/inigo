@@ -41,3 +41,8 @@ _testmain.go
 
 # sftp configuration file
 sftp-config.json
+
+###Ini & others###
+
+*.ini
+/notes/*
