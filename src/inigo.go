@@ -15,7 +15,7 @@
 //		                        "Y88888P'
 /////////////////////////////////////////////////////
 
-//package gini
+//package inigo
 
 package main
 
@@ -38,7 +38,10 @@ const (
 	EQUAL          = "="
 )
 
-type Params map[string]string
+type Params struct {
+	Enabled  map[string]string
+	Disabled map[string]string
+}
 
 type Sections map[string]Params
 
@@ -50,6 +53,7 @@ type Inifile struct {
 	Empty       string
 }
 
+// Read contain of ini file, return it as slice of strings
 func NewFromFile(filename string) []string {
 	var newIni []string
 	file, err := os.Open(filename)
@@ -69,6 +73,7 @@ func NewFromFile(filename string) []string {
 	return newIni
 }
 
+// Remove string by given parameter from slice. E.g, empty string
 func removeString(newIni []string, junk string) []string {
 	for i, str := range newIni {
 		if str == junk {
@@ -79,11 +84,12 @@ func removeString(newIni []string, junk string) []string {
 	return newIni
 }
 
+// Remove commented strings excepts EQUAL (e.g, "=") containing ones
 func removeComments(clearedIni []string) []string {
 	var uncommentIni []string
 
 	for _, str := range clearedIni {
-		if (string(str[0]) != COMM) && (string(str[0]) != UCOMM) {
+		if (string(str[0]) != COMM) && (string(str[0]) != UCOMM) && (strings.Contains(str, EQUAL) != true) {
 			uncommentIni = append(uncommentIni, str)
 		}
 	}
@@ -125,6 +131,19 @@ func Parse(newIni []string) *Inifile {
 }
 */
 
+// Find given string's index in slice
+func findIndexByName(names []string, name string) int {
+	var index int
+	for i, str := range names {
+		if str == name {
+			index = i
+		}
+	}
+
+	return index
+}
+
+// Get sections names, e.g, such as [Name]
 func getSections(clearedIni []string) []string {
 	var sectionNames []string
 
@@ -137,6 +156,7 @@ func getSections(clearedIni []string) []string {
 	return sectionNames
 }
 
+/*
 func getSectionsBodys(uncommentIni []string) map[string]string {
 	sectionsMap := make(map[string]string)
 	sectionNames := getSections(uncommentIni)
@@ -155,7 +175,53 @@ func getSectionsBodys(uncommentIni []string) map[string]string {
 
 	return sectionsMap
 }
+*/
 
+// Constructor fo Params
+func paramsConstruct(body []string) *Params {
+	params := new(Params)
+	for _, str := range body {
+		if (strings.Contains(str, EQUAL) == true) && (string(str[0]) != (COMM || UCOMM)) {
+			splitted := strings.Split(str, EQUAL)
+			if splitted[1] != EMPTY {
+				params.Enabled[splitted[0]] = splitted[1]
+			} else {
+				params[splitted[0]] = nil
+			}
+		}
+	}
+
+	return &params
+}
+
+// Get unparsed []string as body of each Section
+func getSectionsBodys(clearedIni []string) map[string][]string {
+	sectionsMap := make(map[string][]string)
+	sectionNames := getSections(clearedIni)
+
+	for i, str := range clearedIni {
+		for j, name := range sectionNames {
+			if str == name {
+
+				// Index always in range of slice
+				if j != (len(sectionNames) - 1) {
+					nextName := sectionNames[j+1]
+					nextInd := findIndexByName(clearedIni, nextName)
+					body := clearedIni[i:nextInd]
+					sectionsMap[name] = body
+				} else {
+					body := clearedIni[i:]
+					sectionsMap[name] = body
+				}
+
+			}
+		}
+	}
+
+	return sectionsMap
+}
+
+// Remove "[" and "]" from section name
 func clearSectionName(sectionName string) string {
 	sectionName = strings.TrimPrefix(sectionName, LSQUARE)
 	sectionName = strings.TrimSuffix(sectionName, RSQUARE)
@@ -181,15 +247,15 @@ func Parse(newIni []string) *Inifile {
 }
 */
 func main() {
-	//filename := "../ex.ini"
-	filename := "/etc/php/7.0/cli/php.ini"
+	filename := "../ex.ini"
+	//filename := "../ex_php.ini"
 	iniIni := NewFromFile(filename)
 	/*for i := 0; i < len(iniIni); i++ {
 		fmt.Println(iniIni[i])
 	}*/
 
 	iniPini := removeString(iniIni, EMPTY)
-	uiniPini := removeComments(iniPini)
+	//	uiniPini := removeComments(iniPini)
 
 	/*for i := 0; i < len(iniPini); i++ {
 		fmt.Println(iniPini[i])
@@ -199,10 +265,12 @@ func main() {
 
 	//fmt.Println(cleared)
 
-	sectionsBodys := getSectionsBodys(uiniPini)
+	sectionsBodys := getSectionsBodys(iniPini)
 
 	for key, val := range sectionsBodys {
-		fmt.Println(key, "->", val)
+		for _, valVal := range val {
+			fmt.Println(key, "->", valVal)
+		}
 	}
 
 	/*
