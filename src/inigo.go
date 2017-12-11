@@ -55,7 +55,7 @@ type Inifile struct {
 }
 
 // Parse ini file by given file name,
-// return pointer to app main type - Inifile structure
+// return pointer to app main type - Inifile structure.
 func NewIniFile(filename string) *Inifile {
 	inifile := new(Inifile)
 
@@ -68,6 +68,7 @@ func NewIniFile(filename string) *Inifile {
 
 }
 
+// Get Inifile's sections names. Return []string.
 func (i *Inifile) GetSectionsNames() []string {
 	var secnames []string
 
@@ -78,6 +79,7 @@ func (i *Inifile) GetSectionsNames() []string {
 	return secnames
 }
 
+// Print section names.
 func (i *Inifile) PrintSectionsNames() {
 	secnames := i.GetSectionsNames()
 
@@ -86,6 +88,7 @@ func (i *Inifile) PrintSectionsNames() {
 	}
 }
 
+// Get enabled parameters for given section.
 func (i *Inifile) GetParamsEnabled(secname string) []string {
 	var enabled []string
 
@@ -96,6 +99,7 @@ func (i *Inifile) GetParamsEnabled(secname string) []string {
 	return enabled
 }
 
+// Print enabled parameters for given section.
 func (i *Inifile) PrintParamsEnabled(secname string) {
 	paramsenabled := i.GetParamsEnabled(secname)
 
@@ -104,6 +108,7 @@ func (i *Inifile) PrintParamsEnabled(secname string) {
 	}
 }
 
+// Get disabled parameters for given section.
 func (i *Inifile) GetParamsDisabled(secname string) []string {
 	var disabled []string
 
@@ -118,6 +123,7 @@ func (i *Inifile) GetPVal() {
 
 }
 
+// Print disabled parameters for given section.
 func (i *Inifile) PrintParamsDisabled(secname string) {
 	paramsdisabled := i.GetParamsEnabled(secname)
 
@@ -126,6 +132,7 @@ func (i *Inifile) PrintParamsDisabled(secname string) {
 	}
 }
 
+// Get parameters of all sections.
 func (i *Inifile) GetAllParams() []string {
 	var params []string
 	secnames := i.GetSectionsNames()
@@ -143,6 +150,7 @@ func (i *Inifile) GetAllParams() []string {
 	return params
 }
 
+// Print parameters of all sections.
 func (i *Inifile) PrintAllParams() {
 	params := i.GetAllParams()
 

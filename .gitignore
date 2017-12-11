@@ -44,6 +44,6 @@ sftp-config.json
 
 ###Ini & others###
 
-*.ini
+# *.ini
 /notes/*
 inigo
