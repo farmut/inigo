@@ -25,6 +25,7 @@ import (
 	"log"
 	"os"
 	//"sort"
+	"encoding/json"
 	"strings"
 )
 
@@ -40,46 +41,76 @@ const (
 	NULL            = "0"
 )
 
-type Comments []string
+type Comments struct {
+	Comms []string `json:"comms"`
+}
 
 type Params struct {
-	Comments Comments
-	Enabled  map[string]string
-	Disabled map[string]string
+	Comments Comments          `json:"comments"`
+	Enabled  map[string]string `json:"Enabled"`
+	Disabled map[string]string `json:"Disabled"`
 }
 
-type Sections map[string]*Params
+type Sections struct {
+	SectionsMap map[string]*Params `json:"sectionsmap"`
+}
 
 type Inifile struct {
-	Sections *Sections
+	Sections *Sections `json:"sections"`
 }
 
-// Parse ini file by given file name,
-// return pointer to app main type - Inifile structure.
+func (c Comments) String() string {
+	return fmt.Sprintf("%b", c)
+}
+
+func (p *Params) String() string {
+	return fmt.Sprintf("%b", p)
+}
+
+func (s *Sections) String() string {
+	return fmt.Sprintf("%b", s)
+}
+
+func (i *Inifile) String() string {
+	return fmt.Sprintf("%b", i)
+}
+
+// Parses ini file by given file name,
+// returns pointer to app main type - Inifile structure.
 func NewIniFile(filename string) *Inifile {
-	inifile := new(Inifile)
+	inifile := &Inifile{}
 
 	newIni := newFromFile(filename)
 	clearedIni := removeString(newIni, EMPTY)
 	sectionsBodys := getSectionsBodys(clearedIni)
-	sections := sectionsConstruct(sectionsBodys)
+	inifile.Sections = sectionsConstruct(sectionsBodys)
 
 	return inifile
 
 }
 
-// Get Inifile's sections names. Return []string.
+func (i *Inifile) IniToJson() ([]byte, error) {
+	nosj, err := json.Marshal(i)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return nosj, nil
+}
+
+// Gets Inifile's sections names. Returns []string.
 func (i *Inifile) GetSectionsNames() []string {
 	var secnames []string
 
-	for key := range i.Sections {
+	for key := range i.Sections.SectionsMap {
 		secnames = append(secnames, key)
 	}
 
 	return secnames
 }
 
-// Print section names.
+// Prints section names.
 func (i *Inifile) PrintSectionsNames() {
 	secnames := i.GetSectionsNames()
 
@@ -88,18 +119,18 @@ func (i *Inifile) PrintSectionsNames() {
 	}
 }
 
-// Get enabled parameters for given section.
+// Gets enabled parameters for given section.
 func (i *Inifile) GetParamsEnabled(secname string) []string {
 	var enabled []string
 
-	for _, str := range i.Sections[secname] {
+	for _, str := range i.Sections.SectionsMap[secname].Enabled {
 		enabled = append(enabled, str)
 	}
 
 	return enabled
 }
 
-// Print enabled parameters for given section.
+// Prints enabled parameters for given section.
 func (i *Inifile) PrintParamsEnabled(secname string) {
 	paramsenabled := i.GetParamsEnabled(secname)
 
@@ -108,22 +139,18 @@ func (i *Inifile) PrintParamsEnabled(secname string) {
 	}
 }
 
-// Get disabled parameters for given section.
+// Gets disabled parameters for given section.
 func (i *Inifile) GetParamsDisabled(secname string) []string {
 	var disabled []string
 
-	for _, str := range i.Sections[secname] {
+	for _, str := range i.Sections.SectionsMap[secname].Disabled {
 		disabled = append(disabled, str)
 	}
 
 	return disabled
 }
 
-func (i *Inifile) GetPVal() {
-
-}
-
-// Print disabled parameters for given section.
+// Prints disabled parameters for given section.
 func (i *Inifile) PrintParamsDisabled(secname string) {
 	paramsdisabled := i.GetParamsEnabled(secname)
 
@@ -132,17 +159,17 @@ func (i *Inifile) PrintParamsDisabled(secname string) {
 	}
 }
 
-// Get parameters of all sections.
+// Gets parameters of all sections.
 func (i *Inifile) GetAllParams() []string {
 	var params []string
 	secnames := i.GetSectionsNames()
 
 	for _, val := range secnames {
-		for ename := range val.Enabled {
+		for ename := range i.Sections.SectionsMap[val].Enabled {
 			params = append(params, ename)
 		}
 
-		for dname := range val.Disabled {
+		for dname := range i.Sections.SectionsMap[val].Disabled {
 			params = append(params, dname)
 		}
 	}
@@ -150,7 +177,7 @@ func (i *Inifile) GetAllParams() []string {
 	return params
 }
 
-// Print parameters of all sections.
+// Prints parameters of all sections.
 func (i *Inifile) PrintAllParams() {
 	params := i.GetAllParams()
 
@@ -159,7 +186,7 @@ func (i *Inifile) PrintAllParams() {
 	}
 }
 
-// Read contain of ini file, return slice of strings
+// Reads contain of ini file, returns slice of strings
 func newFromFile(filename string) []string {
 	var newIni []string
 	file, err := os.Open(filename)
@@ -179,7 +206,7 @@ func newFromFile(filename string) []string {
 	return newIni
 }
 
-// Remove string from slice by given parameter. Empty string, for example.
+// Removes string from slice by given parameter. Empty string, for example.
 func removeString(newIni []string, junk string) []string {
 	for i, str := range newIni {
 		if str == junk {
@@ -190,21 +217,7 @@ func removeString(newIni []string, junk string) []string {
 	return newIni
 }
 
-// Remove commented strings excepts EQUAL (e.g, "=") containing ones
-func removeComments(clearedIni []string) []string {
-	var uncommentIni []string
-
-	for _, str := range clearedIni {
-		if (string(str[0]) != COMM) && (string(str[0]) != UCOMM) &&
-			(strings.Contains(str, EQUAL) != true) {
-			uncommentIni = append(uncommentIni, str)
-		}
-	}
-
-	return uncommentIni
-}
-
-// Find given string's index in slice
+// Finds given string's index in slice
 func findIndexByName(names []string, name string) int {
 	var index int
 	for i, str := range names {
@@ -216,7 +229,7 @@ func findIndexByName(names []string, name string) int {
 	return index
 }
 
-// Get sections names, e.g, [Name]
+// Gets sections names, e.g, [Name]
 func getSections(clearedIni []string) []string {
 	var sectionNames []string
 
@@ -229,7 +242,7 @@ func getSections(clearedIni []string) []string {
 	return sectionNames
 }
 
-// Split given paramString with EQUAL
+// Splits given paramString with EQUAL
 func splitParamString(paramString string) []string {
 	splitted := strings.Split(paramString, EQUAL)
 
@@ -238,7 +251,10 @@ func splitParamString(paramString string) []string {
 
 // Constructor for Params
 func paramsConstruct(body []string) *Params {
-	params := new(Params)
+	params := &Params{}
+	params.Enabled = make(map[string]string)
+	params.Disabled = make(map[string]string)
+
 	for _, str := range body {
 		if strings.Contains(str, EQUAL) == true {
 			if (string(str[0]) != COMM) || (string(str[0]) != UCOMM) {
@@ -261,28 +277,30 @@ func paramsConstruct(body []string) *Params {
 
 		if (strings.Contains(str, EQUAL) != true) &&
 			((string(str[0]) == COMM) || (string(str[0]) == UCOMM)) {
-			params.Comments = append(params.Comments, str)
+			params.Comments.Comms = append(params.Comments.Comms, str)
 		}
 	}
 
-	return *params
+	return params
 }
 
 // Constructor for Sections
 func sectionsConstruct(sectionsMap map[string][]string) *Sections {
-	sections := new(Sections)
+	sections := &Sections{}
+	sections.SectionsMap = make(map[string]*Params)
+
 	for key, value := range sectionsMap {
-		sections[key] = paramsConstruct(value)
+		sections.SectionsMap[key] = paramsConstruct(value)
 	}
 
-	return *sections
+	return sections
 }
 
-// Get unparsed []string as body of each Section
+// Gets unparsed []string as body of each Section
 func getSectionsBodys(clearedIni []string) map[string][]string {
 	sectionsMap := make(map[string][]string)
 	sectionNames := getSections(clearedIni)
-	sectionHeadless := clearedIni[:sectionNames[0]]
+	sectionHeadless := clearedIni[:findIndexByName(clearedIni, sectionNames[0])]
 
 	// For parameters wich havenot sections
 	sectionsMap[HEADLESS] = sectionHeadless
@@ -291,7 +309,7 @@ func getSectionsBodys(clearedIni []string) map[string][]string {
 		for j, name := range sectionNames {
 			if str == name {
 
-				// Index always in range of slice
+				// Index is always in range of slice
 				if j != (len(sectionNames) - 1) {
 					nextName := sectionNames[j+1]
 					nextInd := findIndexByName(clearedIni, nextName)
@@ -309,7 +327,7 @@ func getSectionsBodys(clearedIni []string) map[string][]string {
 	return sectionsMap
 }
 
-// Remove "[" and "]" from section name
+// Removes "[" and "]" from section name
 func clearSectionName(sectionName string) string {
 	sectionName = strings.TrimPrefix(sectionName, LSQUARE)
 	sectionName = strings.TrimSuffix(sectionName, RSQUARE)
@@ -318,10 +336,14 @@ func clearSectionName(sectionName string) string {
 }
 
 func main() {
-	filename := "../example/ex.ini"
-	//filename := "../example/ex_php.ini"
+	//filename := "../example/ex.ini"
+	filename := "../example/ex_php.ini"
 
 	ini := NewIniFile(filename)
+
+	//iniString := ini.String()
+
+	//fmt.Println(iniString)
 
 	ini.PrintSectionsNames()
 	fmt.Println(EMPTY)
