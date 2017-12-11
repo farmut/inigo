@@ -30,15 +30,15 @@ import (
 )
 
 const (
-	DELIM    string = ","
-	COMM            = ";" // Ordinary comment
-	UCOMM           = "#" // Unix-style comment
-	EMPTY           = ""
-	LSQUARE         = "["
-	RSQUARE         = "]"
-	EQUAL           = "="
-	HEADLESS        = "Headless"
-	NONE            = "none"
+	DELIM   string = ","
+	COMM           = ";" // Ordinary comment
+	UCOMM          = "#" // Unix-style comment
+	EMPTY          = ""
+	LSQUARE        = "["
+	RSQUARE        = "]"
+	EQUAL          = "="
+	GLOBAL         = "Global"
+	NONE           = "none"
 )
 
 type Comments struct {
@@ -298,7 +298,7 @@ func getSectionsBodys(clearedIni []string) map[string][]string {
 	sectionHeadless := clearedIni[:findIndexByName(clearedIni, sectionNames[0])]
 
 	// For parameters wich havenot sections
-	sectionsMap[HEADLESS] = sectionHeadless
+	sectionsMap[GLOBAL] = sectionHeadless
 
 	for i, str := range clearedIni {
 		for j, name := range sectionNames {
