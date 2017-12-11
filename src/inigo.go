@@ -59,22 +59,6 @@ type Inifile struct {
 	Sections *Sections `json:"sections"`
 }
 
-func (c Comments) String() string {
-	return fmt.Sprintf("%b", c)
-}
-
-func (p *Params) String() string {
-	return fmt.Sprintf("%b", p)
-}
-
-func (s *Sections) String() string {
-	return fmt.Sprintf("%b", s)
-}
-
-func (i *Inifile) String() string {
-	return fmt.Sprintf("%b", i)
-}
-
 // Parses ini file by given file name,
 // returns pointer to app main type - Inifile structure.
 func NewIniFile(filename string) *Inifile {
