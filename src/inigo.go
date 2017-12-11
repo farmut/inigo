@@ -29,32 +29,130 @@ import (
 )
 
 const (
-	DELIM   string = ","
-	COMM           = ";" // Ordinary comment
-	UCOMM          = "#" // Unix-style comment
-	EMPTY          = ""
-	LSQUARE        = "["
-	RSQUARE        = "]"
-	EQUAL          = "="
+	DELIM    string = ","
+	COMM            = ";" // Ordinary comment
+	UCOMM           = "#" // Unix-style comment
+	EMPTY           = ""
+	LSQUARE         = "["
+	RSQUARE         = "]"
+	EQUAL           = "="
+	HEADLESS        = "Headless"
+	NULL            = "0"
 )
 
+type Comments []string
+
 type Params struct {
+	Comments Comments
 	Enabled  map[string]string
 	Disabled map[string]string
 }
 
-type Sections map[string]Params
+type Sections map[string]*Params
 
 type Inifile struct {
-	Sections    Sections
-	Params      Params
-	Comment     []string
-	Unixcomment []string
-	Empty       string
+	Sections *Sections
 }
 
-// Read contain of ini file, return it as slice of strings
-func NewFromFile(filename string) []string {
+// Parse ini file by given file name,
+// return pointer to app main type - Inifile structure
+func NewIniFile(filename string) *Inifile {
+	inifile := new(Inifile)
+
+	newIni := newFromFile(filename)
+	clearedIni := removeString(newIni, EMPTY)
+	sectionsBodys := getSectionsBodys(clearedIni)
+	sections := sectionsConstruct(sectionsBodys)
+
+	return inifile
+
+}
+
+func (i *Inifile) GetSectionsNames() []string {
+	var secnames []string
+
+	for key := range i.Sections {
+		secnames = append(secnames, key)
+	}
+
+	return secnames
+}
+
+func (i *Inifile) PrintSectionsNames() {
+	secnames := i.GetSectionsNames()
+
+	for _, str := range secnames {
+		fmt.Println(str)
+	}
+}
+
+func (i *Inifile) GetParamsEnabled(secname string) []string {
+	var enabled []string
+
+	for _, str := range i.Sections[secname] {
+		enabled = append(enabled, str)
+	}
+
+	return enabled
+}
+
+func (i *Inifile) PrintParamsEnabled(secname string) {
+	paramsenabled := i.GetParamsEnabled(secname)
+
+	for _, str := range paramsenabled {
+		fmt.Println(str)
+	}
+}
+
+func (i *Inifile) GetParamsDisabled(secname string) []string {
+	var disabled []string
+
+	for _, str := range i.Sections[secname] {
+		disabled = append(disabled, str)
+	}
+
+	return disabled
+}
+
+func (i *Inifile) GetPVal() {
+
+}
+
+func (i *Inifile) PrintParamsDisabled(secname string) {
+	paramsdisabled := i.GetParamsEnabled(secname)
+
+	for _, str := range paramsdisabled {
+		fmt.Println(str)
+	}
+}
+
+func (i *Inifile) GetAllParams() []string {
+	var params []string
+	secnames := i.GetSectionsNames()
+
+	for _, val := range secnames {
+		for ename := range val.Enabled {
+			params = append(params, ename)
+		}
+
+		for dname := range val.Disabled {
+			params = append(params, dname)
+		}
+	}
+
+	return params
+}
+
+func (i *Inifile) PrintAllParams() {
+	params := i.GetAllParams()
+
+	for _, str := range params {
+		fmt.Println(str)
+	}
+}
+
+// Read contain of ini file, return slice of strings
+func newFromFile(filename string) []string {
 	var newIni []string
 	file, err := os.Open(filename)
 
@@ -73,7 +171,7 @@ func NewFromFile(filename string) []string {
 	return newIni
 }
 
-// Remove string by given parameter from slice. E.g, empty string
+// Remove string from slice by given parameter. Empty string, for example.
 func removeString(newIni []string, junk string) []string {
 	for i, str := range newIni {
 		if str == junk {
@@ -89,47 +187,14 @@ func removeComments(clearedIni []string) []string {
 	var uncommentIni []string
 
 	for _, str := range clearedIni {
-		if (string(str[0]) != COMM) && (string(str[0]) != UCOMM) && (strings.Contains(str, EQUAL) != true) {
+		if (string(str[0]) != COMM) && (string(str[0]) != UCOMM) &&
+			(strings.Contains(str, EQUAL) != true) {
 			uncommentIni = append(uncommentIni, str)
 		}
 	}
 
 	return uncommentIni
 }
-
-/*
-func Parse(newIni []string) *Inifile {
-	iniFile = new(Inifile)
-	params = new(Params)
-	sections = new(Sections)
-	var sectionNames []string
-	var sectionSlices [][]string
-
-	clearedIni := RemoveEmpty(newIni)
-
-	for _, str := range clearedIni {
-		if (str[0] == LSQUARE) && (str[len(str)-1:] == RSQUARE) {
-			sectionNames = append(sectionNames, str)
-
-			for _, strSec := range sectionNames {
-				strIndex := strings.Index(clearedIni, sectionNames)
-			}
-		}
-
-		if (str[0] != COMM) && (str[0] != UCOMM) && (str[0] != LSQUARE) {
-			strSplit := string.Split(str, EQUAL)
-			strKey := strSplit[0]
-			strValue := strSplit[1]
-			params[strKey] = strValue
-
-			iniFile.Params = params
-
-			return
-		}
-	}
-
-}
-*/
 
 // Find given string's index in slice
 func findIndexByName(names []string, name string) int {
@@ -143,7 +208,7 @@ func findIndexByName(names []string, name string) int {
 	return index
 }
 
-// Get sections names, e.g, such as [Name]
+// Get sections names, e.g, [Name]
 func getSections(clearedIni []string) []string {
 	var sectionNames []string
 
@@ -156,48 +221,63 @@ func getSections(clearedIni []string) []string {
 	return sectionNames
 }
 
-/*
-func getSectionsBodys(uncommentIni []string) map[string]string {
-	sectionsMap := make(map[string]string)
-	sectionNames := getSections(uncommentIni)
-	stringBuf := strings.Join(uncommentIni, " ")
-	stringIni := strings.FieldsFunc(stringBuf, func(r rune) bool {
-		return r == '[' || r == ']'
-	})
+// Split given paramString with EQUAL
+func splitParamString(paramString string) []string {
+	splitted := strings.Split(paramString, EQUAL)
 
-	for i, str := range stringIni {
-		for _, name := range sectionNames {
-			if str == clearSectionName(name) {
-				sectionsMap[clearSectionName(name)] = stringIni[i+1]
-			}
-		}
-	}
-
-	return sectionsMap
+	return splitted
 }
-*/
 
-// Constructor fo Params
+// Constructor for Params
 func paramsConstruct(body []string) *Params {
 	params := new(Params)
 	for _, str := range body {
-		if (strings.Contains(str, EQUAL) == true) && (string(str[0]) != (COMM || UCOMM)) {
-			splitted := strings.Split(str, EQUAL)
-			if splitted[1] != EMPTY {
-				params.Enabled[splitted[0]] = splitted[1]
+		if strings.Contains(str, EQUAL) == true {
+			if (string(str[0]) != COMM) || (string(str[0]) != UCOMM) {
+				splitted := splitParamString(str)
+				if splitted[1] != EMPTY {
+					params.Enabled[splitted[0]] = splitted[1]
+				} else {
+					params.Enabled[splitted[0]] = NULL
+				}
+				// string(str[0]) == (COMM || UCOMM))
 			} else {
-				params[splitted[0]] = nil
+				splitted := splitParamString(str)
+				if splitted[1] != EMPTY {
+					params.Disabled[splitted[0]] = splitted[1]
+				} else {
+					params.Disabled[splitted[0]] = NULL
+				}
 			}
+		}
+
+		if (strings.Contains(str, EQUAL) != true) &&
+			((string(str[0]) == COMM) || (string(str[0]) == UCOMM)) {
+			params.Comments = append(params.Comments, str)
 		}
 	}
 
-	return &params
+	return *params
+}
+
+// Constructor for Sections
+func sectionsConstruct(sectionsMap map[string][]string) *Sections {
+	sections := new(Sections)
+	for key, value := range sectionsMap {
+		sections[key] = paramsConstruct(value)
+	}
+
+	return *sections
 }
 
 // Get unparsed []string as body of each Section
 func getSectionsBodys(clearedIni []string) map[string][]string {
 	sectionsMap := make(map[string][]string)
 	sectionNames := getSections(clearedIni)
+	sectionHeadless := clearedIni[:sectionNames[0]]
+
+	// For parameters wich havenot sections
+	sectionsMap[HEADLESS] = sectionHeadless
 
 	for i, str := range clearedIni {
 		for j, name := range sectionNames {
@@ -229,54 +309,14 @@ func clearSectionName(sectionName string) string {
 	return sectionName
 }
 
-/*
-func Parse(newIni []string) *Inifile {
-	iniFile  = new(Inifile)
-	params   = new(Params)
-	sections = new(Sections)
-
-	var sectionNames []string
-	var sectionIndexes []int
-
-	clearedIni := RemoveEmpty(newIni)
-
-	for _, str := range clearedIni {
-		if (str[0] == LSQUARE) && (str[len(str)-1:] == RSQUARE) {
-			sectionNames = append(sectionNames, str)
-
-}
-*/
 func main() {
-	filename := "../ex.ini"
-	//filename := "../ex_php.ini"
-	iniIni := NewFromFile(filename)
-	/*for i := 0; i < len(iniIni); i++ {
-		fmt.Println(iniIni[i])
-	}*/
+	filename := "../example/ex.ini"
+	//filename := "../example/ex_php.ini"
 
-	iniPini := removeString(iniIni, EMPTY)
-	//	uiniPini := removeComments(iniPini)
+	ini := NewIniFile(filename)
 
-	/*for i := 0; i < len(iniPini); i++ {
-		fmt.Println(iniPini[i])
-	}*/
+	ini.PrintSectionsNames()
+	fmt.Println(EMPTY)
 
-	//cleared := clearSectionName("[Animals]")
-
-	//fmt.Println(cleared)
-
-	sectionsBodys := getSectionsBodys(iniPini)
-
-	for key, val := range sectionsBodys {
-		for _, valVal := range val {
-			fmt.Println(key, "->", valVal)
-		}
-	}
-
-	/*
-		pind := GetSectionIndexes(iniPini, ind)
-
-		for i := 0; i < len(pind); i++ {
-			fmt.Println(pind[i])
-		}*/
+	ini.PrintAllParams()
 }
