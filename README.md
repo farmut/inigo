@@ -1,6 +1,6 @@
 # Inigo
 
-Golang written **.ini files parser** with disabled (_commented_) options support.
+Golang written `INI` files **parser** with commented (_disabled_) options support.
 
            o8o               o8o
            `"'               `"'
@@ -12,19 +12,55 @@ Golang written **.ini files parser** with disabled (_commented_) options support
           ___.ini files parser___ d"     YD
                                   "Y88888P'
 
-1. Description
-    1.1 App
-    1.2 Format spec.
-2. Install
-3. Usage
-5. Contrib
-6. TODO
+1. **Description**
+    * _App_
+    * _Format spec_
+2. **Install**
+3. **Usage**
+5. **Contrib**
+6. **TODO**
 
 ## Description
 
 ### App
 
 ### Ini file format
+
+As there is not strict specification for `INI` format, so **Inigo** is based on common description of it in 
+[Wikipedia](https://en.wikipedia.org/wiki/INI_file). Here is the basic notes from there.
+
+#### Keys or Parameters
+
+The basic element contained in an `INI` file is the **key** or property. Every **key** has a _name_ and a 
+_value_, delimited by an **equals sign** `=`. The _name_ appears to the left of the equals sign.
+
+**Note:** In the Windows implementation the key cannot contain the characters equal sign `=` or semicolon
+ `;` as these are reserved characters. The _value_ can contain **any character**.
+
+    name=value
+
+#### Sections
+
+**Keys** may (but need not) be grouped into arbitrarily named **sections**. The section name appears on a
+line by itself, in square brackets `[` and `]`. All **keys** after the **section** declaration are associated
+with that **section**. There is no explicit **"end of section" delimiter**; **sections** end at the next 
+**section** declaration, or the end of the file. **Sections** may not be nested.
+
+**Note:** In the Windows implementation the **section** cannot contain the character closing bracket `]`.
+
+    [section]
+    a=a
+    b=b
+
+#### Case insensitivity
+
+**Section** and **key** _names_ are **not case sensitive** in the Windows implementation.
+
+#### Comments
+
+**Semicolons** `;` at the beginning of the line indicate a **comment**. **Comment** lines are ignored.
+
+    ; comment text
 
 See simple example **ini file** in `example/ex.ini`
 

@@ -38,7 +38,7 @@ const (
 	RSQUARE         = "]"
 	EQUAL           = "="
 	HEADLESS        = "Headless"
-	NULL            = "0"
+	NONE            = "none"
 )
 
 type Comments struct {
@@ -57,6 +57,17 @@ type Sections struct {
 
 type Inifile struct {
 	Sections *Sections `json:"sections"`
+}
+
+type IniFace interface {
+	GetSectionsNames() []string
+	PrintSectionsNames()
+	GetParamsEnabled(string) []string
+	PrintParamsEnabled(string)
+	GetParamsDisabled(string) []string
+	PrintParamsDisabled(string)
+	GetAllParams() []string
+	PrintAllParams()
 }
 
 // Parses ini file by given file name,
@@ -246,7 +257,7 @@ func paramsConstruct(body []string) *Params {
 				if splitted[1] != EMPTY {
 					params.Enabled[splitted[0]] = splitted[1]
 				} else {
-					params.Enabled[splitted[0]] = NULL
+					params.Enabled[splitted[0]] = NONE
 				}
 				// string(str[0]) == (COMM || UCOMM))
 			} else {
@@ -254,7 +265,7 @@ func paramsConstruct(body []string) *Params {
 				if splitted[1] != EMPTY {
 					params.Disabled[splitted[0]] = splitted[1]
 				} else {
-					params.Disabled[splitted[0]] = NULL
+					params.Disabled[splitted[0]] = NONE
 				}
 			}
 		}
