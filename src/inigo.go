@@ -50,67 +50,6 @@ const (
 	NOTBIT         = "~" // Bitwise NOT
 )
 
-const (
-	BITSIZE0  int = 0
-	BITSIZE8      = 8
-	BITSIZE16     = 16
-	BITSIZE32     = 32
-	BITSIZE64     = 64
-)
-
-const (
-	BASE2  int = 2
-	BASE8      = 8
-	BASE10     = 10
-	BASE16     = 16
-)
-
-const (
-	BOOL ParseFlag = 1 + iota
-	STR
-	INT64
-	UINT64
-	FLOAT64
-	BIN64
-	OCT64
-	HEX64
-	ARRAY
-	MAP
-	LIST
-)
-
-type ParseFlag int
-
-type IniParser struct {
-	ParseFlag
-	Functions map[string]func(string) interface{}
-	Flags     [...]string
-}
-
-func (flag ParseFlag) String() string {
-	return Flags[flag-1]
-}
-
-var Flags = [...]string{
-	"BOOL",
-	"STR",
-	"INT64",
-	"UINT64",
-	"FLOAT64",
-	"BIN64",
-	"OCT64",
-	"HEX64",
-	"ARRAY",
-	"MAP",
-	"LIST",
-}
-
-func ErrCheck(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 // Reads contain of ini file, returns slice of strings
 func newFromFile(filename string) []string {
 	var newIni []string
@@ -170,46 +109,6 @@ func parseParamName(paramname string) bool {
 	return check
 }
 
-/*
-func parseParamValue(value string) (interface{}, error) {
-	check, err := strings.ParseBool(value)
-
-	ErrCheck(err)
-
-	return check
-
-
-	check, err := strings.ParseFloat(value, BITSIZE64)
-
-	ErrCheck(err)
-
-	return result
-	}
-
-	checkInt, err := strings.ParseInt(value, BASE10, BITSIZE64)
-
-	ErrCheck(err)
-
-	if checkInt == true {
-		var result int64
-		result = value
-
-		return result
-	}
-
-	checkUint, err := strings.ParseUint(value, BASE10, BITSIZE64)
-
-	ErrCheck(err)
-
-	if checkUint == true {
-		var result uint64
-		result = value
-
-		return result
-	}
-
-}
-*/
 // Gets sections names, e.g, [Name]
 func getSections(clearedIni []string) []string {
 	var sectionNames []string
