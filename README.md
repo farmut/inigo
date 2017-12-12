@@ -154,6 +154,12 @@ One file, `example/ex.ini`, is the simple `INI file` for illustration of base `I
     ;; ex.ini file begin
     ;;;;;;;;;;;;;;;;;;;;;
 
+    ; global parameters
+
+    animals=animals
+    birds=birds
+    insects=insects
+
     ; begin of the animals section
 
     [Animals]
@@ -162,7 +168,34 @@ One file, `example/ex.ini`, is the simple `INI file` for illustration of base `I
     animal2=cat
     animal3=dino # may be Tyranozaurus or Diplodocus
 
+    ; Add some info
+    [DetailOfAnimal]
+
+    NumOfLegs = 4
+    NumOfYeys=2
+
+    ColorOfPolarBear="dirty white"
+    ColorOfTiger=yellow black striped # error
+
+    ;IQ parameter is an proportion animalIQ/humanIQ.
+    ; Not always IQ < 1, right?
     ; begin of the birds section
+
+    dolphinIQ=1.1232286
+    catIQ=0.999999999
+
+    ; Insects it is a very socialized creatures
+
+    [insects]
+
+    ; Case of ants
+    ColonyPopulation=122323754
+
+    ; Case of bees
+    Colonypopulation=1224345.354435646345435
+
+    ; Total amounts of insects
+    Total="very big number"
 
     [Birds]
 

@@ -19,6 +19,9 @@ package inigo
 
 import (
 	"fmt"
+	"reflect"
+	"unicode"
+	"strings"
 )
 
 const (
@@ -181,3 +184,41 @@ func NewParser() *IniParser {
 		return check
 	}
 }
+
+func (parser *IniParser) checkDigs(value string) bool {
+	var check bool
+
+	for _, char := range value {
+		if unicode.IsDigit(rune(char)) != true || (value[0] != "-" || char != ".") {
+			check = false
+		} else {
+			check = true
+		}
+	}
+
+	return check
+}
+
+func (parser *IniParser) checkChars(value string) bool {
+	var check bool
+
+	for _, char := range value {
+		if (unicode.IsPunct(rune(char)) == true && (value[0] != "-" || char != ".")) ||
+			unicode.IsSymbol(rune(char)) == true {
+			check = true
+		} else {
+			check = false
+		}
+	}
+
+	return check
+}
+
+func (parser *IniParser) parseValue(value string) interface{} {
+	if checkDigs(value) == true {
+		if strings.Contains(value, ".") == true {
+			parsed := strconv.ParseFloat(value)
+		}
+}
+
+//func (parser *IniParser) ReflectType(value string)
