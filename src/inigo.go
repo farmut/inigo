@@ -26,6 +26,7 @@ import (
 	"os"
 	//"sort"
 	"encoding/json"
+	//"strconv"
 	"strings"
 )
 
@@ -34,12 +35,290 @@ const (
 	COMM           = ";" // Ordinary comment
 	UCOMM          = "#" // Unix-style comment
 	EMPTY          = ""
+	SPACE          = " "
 	LSQUARE        = "["
 	RSQUARE        = "]"
 	EQUAL          = "="
 	GLOBAL         = "Global"
 	NONE           = "none"
+	AND            = "&&"
+	ANDBIT         = "&" // Bitwise AND
+	OR             = "||"
+	ORBIT          = "|" // Bitwise OR
+	XORBIT         = "^" // Bitwise XOR
+	NOT            = "!"
+	NOTBIT         = "~" // Bitwise NOT
 )
+
+const (
+	BITSIZE0  int = 0
+	BITSIZE8      = 8
+	BITSIZE16     = 16
+	BITSIZE32     = 32
+	BITSIZE64     = 64
+)
+
+const (
+	BASE2  int = 2
+	BASE8      = 8
+	BASE10     = 10
+	BASE16     = 16
+)
+
+const (
+	BOOL ParseFlag = 1 + iota
+	STR
+	INT64
+	UINT64
+	FLOAT64
+	BIN64
+	OCT64
+	HEX64
+	ARRAY
+	MAP
+	LIST
+)
+
+type ParseFlag int
+
+type IniParser struct {
+	ParseFlag
+	Functions map[string]func(string) interface{}
+	Flags     [...]string
+}
+
+func (flag ParseFlag) String() string {
+	return Flags[flag-1]
+}
+
+var Flags = [...]string{
+	"BOOL",
+	"STR",
+	"INT64",
+	"UINT64",
+	"FLOAT64",
+	"BIN64",
+	"OCT64",
+	"HEX64",
+	"ARRAY",
+	"MAP",
+	"LIST",
+}
+
+func ErrCheck(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// Reads contain of ini file, returns slice of strings
+func newFromFile(filename string) []string {
+	var newIni []string
+	file, err := os.Open(filename)
+
+	ErrCheck(err)
+
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		newIni = append(newIni, scanner.Text())
+	}
+
+	return newIni
+}
+
+// Removes string from slice by given parameter. Empty string, for example.
+func removeString(newIni []string, junk string) []string {
+	for i, str := range newIni {
+		if str == junk {
+			newIni = append(newIni[:i], newIni[i+1:]...)
+		}
+	}
+
+	return newIni
+}
+
+// Finds given string's index in slice
+func findIndexByName(names []string, name string) int {
+	var index int
+	for i, str := range names {
+		if str == name {
+			index = i
+		}
+	}
+
+	return index
+}
+
+// Parses geven parameter name, returns false in case of syntax errors.
+// If syntax is correct, returns true
+func parseParamName(paramname string) bool {
+	var check bool
+
+	if strings.Contains(paramname, SPACE) == true &&
+		strings.Index(paramname, SPACE) != (len(paramname)-1) {
+		check = false
+	} else if strings.Contains(paramname, COMM) == true ||
+		strings.Contains(paramname, UCOMM) == true {
+		check = false
+	} else {
+		check = true
+	}
+
+	return check
+}
+
+/*
+func parseParamValue(value string) (interface{}, error) {
+	check, err := strings.ParseBool(value)
+
+	ErrCheck(err)
+
+	return check
+
+
+	check, err := strings.ParseFloat(value, BITSIZE64)
+
+	ErrCheck(err)
+
+	return result
+	}
+
+	checkInt, err := strings.ParseInt(value, BASE10, BITSIZE64)
+
+	ErrCheck(err)
+
+	if checkInt == true {
+		var result int64
+		result = value
+
+		return result
+	}
+
+	checkUint, err := strings.ParseUint(value, BASE10, BITSIZE64)
+
+	ErrCheck(err)
+
+	if checkUint == true {
+		var result uint64
+		result = value
+
+		return result
+	}
+
+}
+*/
+// Gets sections names, e.g, [Name]
+func getSections(clearedIni []string) []string {
+	var sectionNames []string
+
+	for _, str := range clearedIni {
+		if (string(str[0]) == LSQUARE) && (str[len(str)-1:] == RSQUARE) {
+			sectionNames = append(sectionNames, str)
+		}
+	}
+
+	return sectionNames
+}
+
+// Splits given paramString with EQUAL
+func splitParamString(paramString string) []string {
+	splitted := strings.Split(paramString, EQUAL)
+
+	return splitted
+}
+
+func joinParamStrings() {
+
+}
+
+// Constructor for Params
+func paramsConstruct(body []string) *Params {
+	params := &Params{}
+	params.Enabled = make(map[string]string)
+	params.Disabled = make(map[string]string)
+
+	for _, str := range body {
+		if strings.Contains(str, EQUAL) == true {
+			if (string(str[0]) != COMM) || (string(str[0]) != UCOMM) {
+				splitted := splitParamString(str)
+				if splitted[1] != EMPTY {
+					params.Enabled[splitted[0]] = splitted[1]
+				} else {
+					params.Enabled[splitted[0]] = NONE
+				}
+
+			} else {
+				splitted := splitParamString(str)
+				if splitted[1] != EMPTY {
+					params.Disabled[splitted[0]] = splitted[1]
+				} else {
+					params.Disabled[splitted[0]] = NONE
+				}
+			}
+		}
+
+		if (strings.Contains(str, EQUAL) != true) &&
+			((string(str[0]) == COMM) || (string(str[0]) == UCOMM)) {
+			params.Comments.Comms = append(params.Comments.Comms, str)
+		}
+	}
+
+	return params
+}
+
+// Constructor for Sections
+func sectionsConstruct(sectionsMap map[string][]string) *Sections {
+	sections := &Sections{}
+	sections.SectionsMap = make(map[string]*Params)
+
+	for key, value := range sectionsMap {
+		sections.SectionsMap[key] = paramsConstruct(value)
+	}
+
+	return sections
+}
+
+// Gets unparsed []string as body of each Section
+func getSectionsBodys(clearedIni []string) map[string][]string {
+	sectionsMap := make(map[string][]string)
+	sectionNames := getSections(clearedIni)
+	sectionHeadless := clearedIni[:findIndexByName(clearedIni, sectionNames[0])]
+
+	// For parameters without section name e.g. GLOBAL parameters
+	sectionsMap[GLOBAL] = sectionHeadless
+
+	for i, str := range clearedIni {
+		for j, name := range sectionNames {
+			if str == name {
+
+				// Index is always in range of slice
+				if j != (len(sectionNames) - 1) {
+					nextName := sectionNames[j+1]
+					nextInd := findIndexByName(clearedIni, nextName)
+					body := clearedIni[i:nextInd]
+					sectionsMap[name] = body
+				} else {
+					body := clearedIni[i:]
+					sectionsMap[name] = body
+				}
+
+			}
+		}
+	}
+
+	return sectionsMap
+}
+
+// Removes "[" and "]" from section name
+func clearSectionName(sectionName string) string {
+	sectionName = strings.TrimPrefix(sectionName, LSQUARE)
+	sectionName = strings.TrimSuffix(sectionName, RSQUARE)
+
+	return sectionName
+}
 
 type Comments struct {
 	Comms []string `json:"comms"`
@@ -49,6 +328,7 @@ type Params struct {
 	Comments Comments          `json:"comments"`
 	Enabled  map[string]string `json:"Enabled"`
 	Disabled map[string]string `json:"Disabled"`
+	Errors   []string          `json:"Errors"`
 }
 
 type Sections struct {
@@ -57,17 +337,6 @@ type Sections struct {
 
 type Inifile struct {
 	Sections *Sections `json:"sections"`
-}
-
-type IniFace interface {
-	GetSectionsNames() []string
-	PrintSectionsNames()
-	GetParamsEnabled(string) []string
-	PrintParamsEnabled(string)
-	GetParamsDisabled(string) []string
-	PrintParamsDisabled(string)
-	GetAllParams() []string
-	PrintAllParams()
 }
 
 // Parses ini file by given file name,
@@ -87,9 +356,7 @@ func NewIniFile(filename string) *Inifile {
 func (i *Inifile) IniToJson() ([]byte, error) {
 	nosj, err := json.Marshal(i)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	ErrCheck(err)
 
 	return nosj, nil
 }
@@ -181,153 +448,8 @@ func (i *Inifile) PrintAllParams() {
 	}
 }
 
-// Reads contain of ini file, returns slice of strings
-func newFromFile(filename string) []string {
-	var newIni []string
-	file, err := os.Open(filename)
+func (i *Inifile) FindParam(secname, paramname string) interface{} {
 
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-
-	for scanner.Scan() {
-		newIni = append(newIni, scanner.Text())
-	}
-
-	return newIni
-}
-
-// Removes string from slice by given parameter. Empty string, for example.
-func removeString(newIni []string, junk string) []string {
-	for i, str := range newIni {
-		if str == junk {
-			newIni = append(newIni[:i], newIni[i+1:]...)
-		}
-	}
-
-	return newIni
-}
-
-// Finds given string's index in slice
-func findIndexByName(names []string, name string) int {
-	var index int
-	for i, str := range names {
-		if str == name {
-			index = i
-		}
-	}
-
-	return index
-}
-
-// Gets sections names, e.g, [Name]
-func getSections(clearedIni []string) []string {
-	var sectionNames []string
-
-	for _, str := range clearedIni {
-		if (string(str[0]) == LSQUARE) && (str[len(str)-1:] == RSQUARE) {
-			sectionNames = append(sectionNames, str)
-		}
-	}
-
-	return sectionNames
-}
-
-// Splits given paramString with EQUAL
-func splitParamString(paramString string) []string {
-	splitted := strings.Split(paramString, EQUAL)
-
-	return splitted
-}
-
-// Constructor for Params
-func paramsConstruct(body []string) *Params {
-	params := &Params{}
-	params.Enabled = make(map[string]string)
-	params.Disabled = make(map[string]string)
-
-	for _, str := range body {
-		if strings.Contains(str, EQUAL) == true {
-			if (string(str[0]) != COMM) || (string(str[0]) != UCOMM) {
-				splitted := splitParamString(str)
-				if splitted[1] != EMPTY {
-					params.Enabled[splitted[0]] = splitted[1]
-				} else {
-					params.Enabled[splitted[0]] = NONE
-				}
-				// string(str[0]) == (COMM || UCOMM))
-			} else {
-				splitted := splitParamString(str)
-				if splitted[1] != EMPTY {
-					params.Disabled[splitted[0]] = splitted[1]
-				} else {
-					params.Disabled[splitted[0]] = NONE
-				}
-			}
-		}
-
-		if (strings.Contains(str, EQUAL) != true) &&
-			((string(str[0]) == COMM) || (string(str[0]) == UCOMM)) {
-			params.Comments.Comms = append(params.Comments.Comms, str)
-		}
-	}
-
-	return params
-}
-
-// Constructor for Sections
-func sectionsConstruct(sectionsMap map[string][]string) *Sections {
-	sections := &Sections{}
-	sections.SectionsMap = make(map[string]*Params)
-
-	for key, value := range sectionsMap {
-		sections.SectionsMap[key] = paramsConstruct(value)
-	}
-
-	return sections
-}
-
-// Gets unparsed []string as body of each Section
-func getSectionsBodys(clearedIni []string) map[string][]string {
-	sectionsMap := make(map[string][]string)
-	sectionNames := getSections(clearedIni)
-	sectionHeadless := clearedIni[:findIndexByName(clearedIni, sectionNames[0])]
-
-	// For parameters wich havenot sections
-	sectionsMap[GLOBAL] = sectionHeadless
-
-	for i, str := range clearedIni {
-		for j, name := range sectionNames {
-			if str == name {
-
-				// Index is always in range of slice
-				if j != (len(sectionNames) - 1) {
-					nextName := sectionNames[j+1]
-					nextInd := findIndexByName(clearedIni, nextName)
-					body := clearedIni[i:nextInd]
-					sectionsMap[name] = body
-				} else {
-					body := clearedIni[i:]
-					sectionsMap[name] = body
-				}
-
-			}
-		}
-	}
-
-	return sectionsMap
-}
-
-// Removes "[" and "]" from section name
-func clearSectionName(sectionName string) string {
-	sectionName = strings.TrimPrefix(sectionName, LSQUARE)
-	sectionName = strings.TrimSuffix(sectionName, RSQUARE)
-
-	return sectionName
 }
 
 func main() {

@@ -1,6 +1,6 @@
 # Inigo
 
-Golang written `INI` files **parser** with commented (_disabled_) options support.
+Golang written `INI` files **parser** library.
 
            o8o               o8o
            `"'               `"'
@@ -13,20 +13,49 @@ Golang written `INI` files **parser** with commented (_disabled_) options suppor
                                   "Y88888P'
 
 1. **Description**
-    * _App_
-    * _Format spec_
+    * **Inigo**
+      - Project status
+      - Current version
+      - Credits
 2. **Install**
 3. **Usage**
-5. **Contrib**
-6. **TODO**
+4. **Examples**
+5. **Ini files format**
+6. **Contrib**
+7. **TODO**
 
 ## Description
 
-### App
+### Inigo
 
-### Ini file format
+**Inigo** is a Golang library with wide range recognised options and with some writing features. **Inigo**
+may **read** given file, **parse** all containing data, **make** some changes, **retrieve** all data in 
+form `key:value` and **convert** parsed data to JSON, XML and YAML (TODO). Based on common description 
+of `INI files`, it extends stansart syntax with many possible data types.
 
-As there is not strict specification for `INI` format, so **Inigo** is based on common description of it in 
+About `INI files` format used, see **"Ini files format"** in this paper.
+
+#### Project status
+
+Development since @Date:   2017-12-06 07:15:25
+
+Active since
+
+#### Current version
+
+#### Credits
+
+@Autor hIMEI <hIMEI@tuta.io>
+
+## Install
+
+## Usage
+
+## Examples
+
+## Ini file format
+
+As there is no strict specification for `INI` format, so **Inigo** is based on common description of it in 
 [Wikipedia](https://en.wikipedia.org/wiki/INI_file). Here is the basic notes from there.
 
 #### Keys or Parameters
@@ -101,12 +130,29 @@ Interpretation of multiple **section** declarations with the same name also vari
 duplicate **sections** simply merge their _properties_ together, as if they occurred contiguously. Others may
 abort, or ignore some aspect of the `INI file`.
 
+##### Arrays
+
+[Russian version](https://ru.wikipedia.org/wiki/.ini) of 
+[Wikipedia article](https://en.wikipedia.org/wiki/INI_file) shows an examples of working with **arrays** in
+`INI files` as **Zend Framework** do:
+
+    ; in Zend Framework array is determined as in next statement
+    [Section3]
+    var1[]=значение_1_1
+    var1[]=значение_1_2
+    var1[]=значение_1_3
+    var2=значение_2
+
+But **Inigo** don't recognize (_yet_) such syntax.
+
 #### Examples of INI files
 
 See examples of `INI files` in `example` folder of app's repo.
 One file, `example/ex.ini`, is the simple `INI file` for illustration of base `INI` features:
 
-    ; example/ex.ini file begin
+    ;;;;;;;;;;;;;;;;;;;;;
+    ;; ex.ini file begin
+    ;;;;;;;;;;;;;;;;;;;;;
 
     ; begin of the animals section
 
@@ -114,7 +160,7 @@ One file, `example/ex.ini`, is the simple `INI file` for illustration of base `I
 
     animal1=dog
     animal2=cat
-    animal3=dino # may be Tyranozaurus or Diplodocus 
+    animal3=dino # may be Tyranozaurus or Diplodocus
 
     ; begin of the birds section
 
@@ -132,5 +178,13 @@ One file, `example/ex.ini`, is the simple `INI file` for illustration of base `I
 
     ; this is the end
 
-Other file, `examples/ex_php.ini` it realy `php.ini` file representing more **complex case**.
+Other file, `examples/ex_php.ini` is realy `php.ini` file representing more **complex case**.
+
+## Install
+
+## Usage
+
+## Contrib
+
+## TODO
 
