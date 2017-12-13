@@ -367,7 +367,6 @@ func (parser *IniParser) checkString(value string) bool {
 	8	MAP
 	9	LIST
 	10	STR
-)
 */
 func (parser *IniParser) getParserFunc(value string) interface{} {
 	var parseFunc func(value string) interface{}

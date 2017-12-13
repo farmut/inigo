@@ -59,13 +59,13 @@ type Inifile struct {
 // * Functions
 // 		- NewIniFile(filename string) *Inifile
 //
-// * Methods                                                     +-+-+-+
-// 		- IniToJson() ([]byte, error)                            |░|█|░|
-// 		- GetSectionsNames() []string                            +-+-+-+
-// 		- PrintSectionsNames()                                   |░|░|█|
-// 		- GetParamsEnabled(secname string) []string              +-+-+-+
-// 		- PrintParamsEnabled(secname string)                     |█|█|█|
-// 		- GetParamsDisabled(secname string) []string             +-+-+-+
+// * Methods
+// 		- IniToJson() ([]byte, error)
+// 		- GetSectionsNames() []string
+// 		- PrintSectionsNames()
+// 		- GetParamsEnabled(secname string) []string
+// 		- PrintParamsEnabled(secname string)
+// 		- GetParamsDisabled(secname string) []string
 // 		- PrintParamsDisabled(secname string)
 // 		- GetAllParams() []string
 // 		- PrintAllParams()
