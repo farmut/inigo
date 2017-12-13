@@ -24,95 +24,6 @@ import (
 	"unicode"
 )
 
-const (
-	BITSIZE0  int = 0
-	BITSIZE8      = 8
-	BITSIZE16     = 16
-	BITSIZE32     = 32
-	BITSIZE64     = 64
-)
-
-const (
-	BASE0  int = 0 // We need only this base for all case
-	BASE2      = 2
-	BASE8      = 8
-	BASE10     = 10
-	BASE16     = 16
-)
-
-const (
-	ERROR   string = "; PARSING ERROR"
-	NOERROR        = "NOERROR"
-)
-
-const (
-	DELIM      string = ","
-	ONE               = "1"
-	COMM              = ";" // Ordinary comment
-	UCOMM             = "#" // Unix-style comment
-	DUCOMM            = "##"
-	EMPTY             = ""
-	SPACE             = " "
-	LSQUARE           = "["
-	RSQUARE           = "]"
-	LFIG              = "{"
-	RFIG              = "}"
-	EQUAL             = "="
-	UPPERTRUE         = "TRUE"
-	CTRUE             = "True"
-	LOWERTRUE         = "true"
-	UPPERFALSE        = "FALSE"
-	CFALSE            = "False"
-	LOWERFALSE        = "false"
-	GLOBAL            = "GLOBAL"
-	NONE              = "NONE"
-	AND               = "&&"
-	ANDBIT            = "&" // Bitwise AND
-	OR                = "||"
-	ORBIT             = "|" // Bitwise OR
-	XORBIT            = "^" // Bitwise XOR
-	NOT               = "!"
-	NOTBIT            = "~" // Bitwise NOT
-	OCTAL             = "0"
-	HEX               = "0x"
-	MINUS             = "-"
-	DOT               = "."
-)
-
-var COMMS = []string{
-	COMM,
-	UCOMM,
-	DUCOMM,
-}
-
-var PREFFS = []string{
-	OCTAL,
-	HEX,
-	MINUS,
-}
-
-var BOOLEANS = []string{
-	UPPERTRUE,
-	CTRUE,
-	LOWERTRUE,
-	UPPERFALSE,
-	CFALSE,
-	LOWERFALSE,
-}
-
-var LOGICS = []string{
-	AND,
-	OR,
-	NOT,
-}
-
-var BITS = []string{
-	ORBIT,
-	XORBIT,
-	NOTBIT,
-	ANDBIT,
-}
-
 type IniParser struct {
 	Functions map[int]func(string) interface{}
 }
@@ -140,7 +51,7 @@ func NewParser() *IniParser {
 
 	// Parses boolean
 	parser.Functions[0] = func(value string) interface{} {
-		check, _ := strconv.ParseInt(value, BASE0, BITSIZE64)
+		check, _ := strconv.ParseBool(value)
 
 		if check == 0 && ErrCheck(value) != NOERROR {
 			return ErrCheck(value)
@@ -340,6 +251,17 @@ func (parser *IniParser) checkChar(value string) bool {
 
 	return check
 }
+
+func (parser *IniParser) checkQuotes(value string) bool {
+	check := false
+
+	if value[0] == DQUOTE && value[len(value)-1] == DQUOTE {
+		check = true
+	}
+
+	return check
+}
+
 func (parser *IniParser) checkString(value string) bool {
 	check := false
 
@@ -371,41 +293,53 @@ func (parser *IniParser) checkString(value string) bool {
 func (parser *IniParser) getParserFunc(value string) interface{} {
 	var parseFunc func(value string) interface{}
 
+	// Bool
 	if parser.checkBool(value) == true {
 		parseFunc = parser.Functions[0]
 	}
 
-	if parser.checkDot(value) == false &&
-		parser.checkDigs(value) == true &&
-		parser.checkPreff(value) == -1 {
+	// Int64
+	if parser.checkPreff(value) == 2 &&
+		parser.checkDigs(strings.TrimPrefix(value, MINUS)) == true {
 		parseFunc = parser.Functions[1]
 	}
 
-	if parser.checkPreff(value) == 2 &&
-		parser.checkDigs(strings.TrimPrefix(value, MINUS)) == true {
+	// Uint64
+	if parser.checkDot(value) == false &&
+		parser.checkDigs(value) == true &&
+		parser.checkPreff(value) == -1 {
 		parseFunc = parser.Functions[2]
 	}
 
+	// Float64
 	if parser.checkDigs(value) == true &&
 		parser.checkDot(value) == true {
 		parseFunc = parser.Functions[3]
 	}
 
+	// Int64 in bin rep.
 	if parser.checkBool(value) == true {
 		parseFunc = parser.Functions[4]
 	}
 
-	if parser.checkDots(value) == false &&
+	// Int64 in oct rep.
+	if parser.checkDot(value) == false &&
 		parser.checkDigs(value) == true &&
 		parser.checkPreff(value) == 0 {
 		parseFunc = parser.Functions[5]
 	}
 
-	if parser.checkDots(value) == false &&
+	// Int64 in hex rep.
+	if parser.checkDot(value) == false &&
 		parser.checkDigs(value) == true &&
 		parser.checkChar(value) == false &&
 		parser.checkPreff(value) == 1 {
 		parseFunc = parser.Functions[6]
+	}
+
+	// Slice of string
+	if strings.Contains(value, COMMA) == true {
+		parseFunc = parser.Functions[7]
 	}
 
 }
