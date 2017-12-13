@@ -20,8 +20,8 @@ package inigo
 import (
 	"fmt"
 	"reflect"
-	"unicode"
 	"strings"
+	"unicode"
 )
 
 const (
@@ -33,56 +33,105 @@ const (
 )
 
 const (
-	BASE2  int = 2
+	BASE0  int = 0 // We need only this base for all case
+	BASE2      = 2
 	BASE8      = 8
 	BASE10     = 10
 	BASE16     = 16
 )
 
 const (
-	BOOL ParseFlag = 1 + iota
-	INT64
-	UINT64
-	FLOAT64
-	BIN64
-	OCT64
-	HEX64
-	ARRAY
-	MAP
-	LIST
-	STR
+	ERROR   string = "; PARSING ERROR"
+	NOERROR        = "NOERROR"
 )
 
-var Flags = [...]string{
-	"BOOL",
-	"INT64",
-	"UINT64",
-	"FLOAT64",
-	"BIN64",
-	"OCT64",
-	"HEX64",
-	"ARRAY",
-	"MAP",
-	"LIST",
-	"STR",
+const (
+	DELIM      string = ","
+	ONE               = "1"
+	COMM              = ";" // Ordinary comment
+	UCOMM             = "#" // Unix-style comment
+	DUCOMM            = "##"
+	EMPTY             = ""
+	SPACE             = " "
+	LSQUARE           = "["
+	RSQUARE           = "]"
+	LFIG              = "{"
+	RFIG              = "}"
+	EQUAL             = "="
+	UPPERTRUE         = "TRUE"
+	CTRUE             = "True"
+	LOWERTRUE         = "true"
+	UPPERFALSE        = "FALSE"
+	CFALSE            = "False"
+	LOWERFALSE        = "false"
+	GLOBAL            = "GLOBAL"
+	NONE              = "NONE"
+	AND               = "&&"
+	ANDBIT            = "&" // Bitwise AND
+	OR                = "||"
+	ORBIT             = "|" // Bitwise OR
+	XORBIT            = "^" // Bitwise XOR
+	NOT               = "!"
+	NOTBIT            = "~" // Bitwise NOT
+	OCTAL             = "0"
+	HEX               = "0x"
+	MINUS             = "-"
+	DOT               = "."
+)
+
+var COMMS = []string{
+	COMM,
+	UCOMM,
+	DUCOMM,
 }
 
-type ParseFlag int
+var PREFFS = []string{
+	OCTAL,
+	HEX,
+	MINUS,
+}
+
+var BOOLEANS = []string{
+	UPPERTRUE,
+	CTRUE,
+	LOWERTRUE,
+	UPPERFALSE,
+	CFALSE,
+	LOWERFALSE,
+}
+
+var LOGICS = []string{
+	AND,
+	OR,
+	NOT,
+}
+
+var BITS = []string{
+	ORBIT,
+	XORBIT,
+	NOTBIT,
+	ANDBIT,
+}
 
 type IniParser struct {
-	ParseFlag
 	Functions map[int]func(string) interface{}
-	Flags     [...]string
 }
 
-func (flag ParseFlag) String() string {
-	return Flags[flag-1]
-}
-
-func ErrCheck(err error) {
-	if err != nil {
-		log.Fatal(err)
+// Parsing functions from strconv package (such as ParseBool(string), ParseUint(string))
+// return parsed value end error value in case of error. But if second err is omitted
+// with blank identifyer, functions return 0. To handle errors and (in same time0 avoiding program
+// evaluation breaks in cases of errors we may match returned value and 0, and also check if given
+// string not realy "0". If 0 (integer) is returned and string != "0", there is error.
+func ErrCheck(value string) string {
+	var errorString string
+	if value != "0" {
+		errorString += value + ERROR
+		//errorString +=
+	} else {
+		errorString = NOERROR
 	}
+
+	return errorString
 }
 
 func NewParser() *IniParser {
@@ -90,70 +139,98 @@ func NewParser() *IniParser {
 	parser.Functions = make(map[int]func(string) interface{})
 
 	// Parses boolean
-	parser.Functions[0] = func(string) interface{} {
-		check, err := strings.ParseBool(string)
+	parser.Functions[0] = func(value string) interface{} {
+		check, _ := strconv.ParseInt(value, BASE0, BITSIZE64)
 
-		ErrCheck(err)
+		if check == 0 && ErrCheck(value) != NOERROR {
+			return ErrCheck(value)
+		} else {
+			return check
+		}
 
-		return check
+		return
 	}
 
 	// Parses int
-	parser.Functions[1] = func(string) interface{} {
-		check, err := strings.ParseInt(string, BASE10, BITSIZE64)
+	parser.Functions[1] = func(value string) interface{} {
+		check, _ := strconv.ParseInt(value, BASE0, BITSIZE64)
 
-		ErrCheck(err)
+		if check == 0 && ErrCheck(value) != NOERROR {
+			return ErrCheck(value)
+		} else {
+			return check
+		}
 
-		return check
+		return
 	}
 
 	// Parses uint
-	parser.Functions[2] = func(string) interface{} {
-		check, err := strings.ParseUint(string, BASE10, BITSIZE64)
+	parser.Functions[2] = func(value string) interface{} {
+		check, _ := strconv.ParseUint(value, BASE0, BITSIZE64)
 
-		ErrCheck(err)
+		if check == 0 && ErrCheck(value) != NOERROR {
+			return ErrCheck(value)
+		} else {
+			return check
+		}
 
-		return check
+		return
 	}
 
 	// Parses float
-	parser.Functions[3] = func(string) interface{} {
-		check, err := strings.ParseFloat(string, BITSIZE64)
+	parser.Functions[3] = func(value string) interface{} {
+		check, _ := strconv.ParseFloat(value, BITSIZE64)
 
-		ErrCheck(err)
+		if check == 0 && ErrCheck(value) != NOERROR {
+			return ErrCheck(value)
+		} else {
+			return check
+		}
 
-		return check
+		return
 	}
 
 	// Parses int in binary
-	parser.Functions[4] = func(string) interface{} {
-		check, err := strings.ParseInt(string, BASE2, BITSIZE64)
+	parser.Functions[4] = func(value string) interface{} {
+		check, _ := strconv.ParseInt(value, BASE2, BITSIZE64)
 
-		ErrCheck(err)
+		if check == 0 && ErrCheck(value) != NOERROR {
+			return ErrCheck(value)
+		} else {
+			return check
+		}
 
-		return check
+		return
 	}
 
 	// Parses int in octal
-	parser.Functions[5] = func(string) interface{} {
-		check, err := strings.ParseInt(string, BASE8, BITSIZE64)
+	parser.Functions[5] = func(value string) interface{} {
+		check, _ := strconv.ParseInt(value, BASE8, BITSIZE64)
 
-		ErrCheck(err)
+		if check == 0 && ErrCheck(value) != NOERROR {
+			return ErrCheck(value)
+		} else {
+			return check
+		}
 
-		return check
+		return
 	}
 
 	// Parses int in hexademical
-	parser.Functions[6] = func(string) interface{} {
-		check, err := strings.ParseInt(string, BASE16, BITSIZE64)
+	parser.Functions[6] = func(value string) interface{} {
+		check, _ := strconv.ParseInt(value, BASE0, BITSIZE64)
 
-		ErrCheck(err)
+		if check == 0 && ErrCheck(value) != NOERROR {
+			return ErrCheck(value)
+		} else {
+			return check
+		}
 
-		return check
+		return
 	}
-
+	////////////////////////////////////////////////////////////////////////////////////////
 	parser.Functions[7] = func(string) interface{} {
-		check, err := ParseInt(string, BASE10, BITSIZE64)
+		check, _ := strconv.ParseInt(string, BASE10, BITSIZE64)
 
 		ErrCheck(err)
 
@@ -161,7 +238,7 @@ func NewParser() *IniParser {
 	}
 
 	parser.Functions[8] = func(string) interface{} {
-		check, err := ParseInt(string, BASE10, BITSIZE64)
+		check, _ := strconv.ParseInt(string, BASE10, BITSIZE64)
 
 		ErrCheck(err)
 
@@ -169,7 +246,7 @@ func NewParser() *IniParser {
 	}
 
 	parser.Functions[9] = func(string) interface{} {
-		check, err := ParseInt(string, BASE10, BITSIZE64)
+		check, _ := strconv.ParseInt(string, BASE10, BITSIZE64)
 
 		ErrCheck(err)
 
@@ -177,48 +254,161 @@ func NewParser() *IniParser {
 	}
 
 	parser.Functions[10] = func(string) interface{} {
-		check, err := ParseInt(string, BASE10, BITSIZE64)
+		check, _ := strconv.ParseInt(string, BASE10, BITSIZE64)
 
 		ErrCheck(err)
 
 		return check
 	}
+
+	return parser
+}
+
+func (parser *IniParser) checkPreff(value string) int {
+	var preff int
+	for i, str := range PREFFS {
+		if value == str {
+			preff = i
+			break
+		} else {
+			preff = -1
+		}
+	}
+
+	return preff
 }
 
 func (parser *IniParser) checkDigs(value string) bool {
-	var check bool
+	check := true
 
 	for _, char := range value {
-		if unicode.IsDigit(rune(char)) != true || (value[0] != "-" || char != ".") {
+		if unicode.IsDigit(rune(char)) != true && char != DOT {
 			check = false
-		} else {
-			check = true
+			break
 		}
 	}
 
 	return check
 }
 
-func (parser *IniParser) checkChars(value string) bool {
-	var check bool
+func (parser *IniParser) checkDot(value string) bool {
+	check := false
+
+	if strings.Contains(value, DOT) == true && strings.Count(value, DOT) < 2 {
+		check = true
+	}
+
+	return check
+}
+
+func (p *IniParser) checkBin(value string) bool {
+	check := true
 
 	for _, char := range value {
-		if (unicode.IsPunct(rune(char)) == true && (value[0] != "-" || char != ".")) ||
+		if char != OCTAL && char != ONE {
+			check = false
+			break
+		}
+	}
+
+	return check
+}
+
+func (parser *IniParser) checkBool(value string) bool {
+	check := false
+
+	for _, str := range BOOLEAN {
+		if value == str {
+			check = true
+			break
+		}
+	}
+
+	return check
+}
+
+func (parser *IniParser) checkChar(value string) bool {
+	check := false
+
+	for _, char := range value {
+		if unicode.IsPunct(rune(char)) == true ||
 			unicode.IsSymbol(rune(char)) == true {
 			check = true
-		} else {
-			check = false
+			break
+		}
+	}
+
+	return check
+}
+func (parser *IniParser) checkString(value string) bool {
+	check := false
+
+	for _, char := range value {
+		if unicode.IsPunct(rune(char)) == true ||
+			unicode.IsSymbol(rune(char)) == true ||
+			unicode.IsLetter(rune(char)) == true {
+			check = true
+			break
 		}
 	}
 
 	return check
 }
 
-func (parser *IniParser) parseValue(value string) interface{} {
-	if checkDigs(value) == true {
-		if strings.Contains(value, ".") == true {
-			parsed := strconv.ParseFloat(value)
-		}
+/*
+	0	BOOL
+	1	INT64
+	2	UINT64
+	3	FLOAT64
+	4	BIN64
+	5	OCT64
+	6	HEX64
+	7	ARRAY
+	8	MAP
+	9	LIST
+	10	STR
+)
+*/
+func (parser *IniParser) getParserFunc(value string) interface{} {
+	var parseFunc func(value string) interface{}
+
+	if parser.checkBool(value) == true {
+		parseFunc = parser.Functions[0]
+	}
+
+	if parser.checkDot(value) == false &&
+		parser.checkDigs(value) == true &&
+		parser.checkPreff(value) == -1 {
+		parseFunc = parser.Functions[1]
+	}
+
+	if parser.checkPreff(value) == 2 &&
+		parser.checkDigs(strings.TrimPrefix(value, MINUS)) == true {
+		parseFunc = parser.Functions[2]
+	}
+
+	if parser.checkDigs(value) == true &&
+		parser.checkDot(value) == true {
+		parseFunc = parser.Functions[3]
+	}
+
+	if parser.checkBool(value) == true {
+		parseFunc = parser.Functions[4]
+	}
+
+	if parser.checkDots(value) == false &&
+		parser.checkDigs(value) == true &&
+		parser.checkPreff(value) == 0 {
+		parseFunc = parser.Functions[5]
+	}
+
+	if parser.checkDots(value) == false &&
+		parser.checkDigs(value) == true &&
+		parser.checkChar(value) == false &&
+		parser.checkPreff(value) == 1 {
+		parseFunc = parser.Functions[6]
+	}
+
 }
 
 //func (parser *IniParser) ReflectType(value string)

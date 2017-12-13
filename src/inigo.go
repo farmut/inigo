@@ -30,25 +30,162 @@ import (
 	"strings"
 )
 
-const (
-	DELIM   string = ","
-	COMM           = ";" // Ordinary comment
-	UCOMM          = "#" // Unix-style comment
-	EMPTY          = ""
-	SPACE          = " "
-	LSQUARE        = "["
-	RSQUARE        = "]"
-	EQUAL          = "="
-	GLOBAL         = "Global"
-	NONE           = "none"
-	AND            = "&&"
-	ANDBIT         = "&" // Bitwise AND
-	OR             = "||"
-	ORBIT          = "|" // Bitwise OR
-	XORBIT         = "^" // Bitwise XOR
-	NOT            = "!"
-	NOTBIT         = "~" // Bitwise NOT
-)
+type Comments struct {
+	Comms []string `json:"comms"`
+}
+
+type Params struct {
+	Comments Comments          `json:"comments"`
+	Enabled  map[string]string `json:"Enabled"`
+	Disabled map[string]string `json:"Disabled"`
+	Errors   []string          `json:"Errors"`
+}
+
+type Sections struct {
+	SectionsMap map[string]*Params `json:"sectionsmap"`
+}
+
+type Inifile struct {
+	Sections *Sections `json:"sections"`
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//                           **Library's API is here:**
+//
+// * API version
+//   v1.0.0
+//
+// * Functions
+// 		- NewIniFile(filename string) *Inifile
+//
+// * Methods                                                     +-+-+-+
+// 		- IniToJson() ([]byte, error)                            |░|█|░|
+// 		- GetSectionsNames() []string                            +-+-+-+
+// 		- PrintSectionsNames()                                   |░|░|█|
+// 		- GetParamsEnabled(secname string) []string              +-+-+-+
+// 		- PrintParamsEnabled(secname string)                     |█|█|█|
+// 		- GetParamsDisabled(secname string) []string             +-+-+-+
+// 		- PrintParamsDisabled(secname string)
+// 		- GetAllParams() []string
+// 		- PrintAllParams()
+// 		- GetValue(secname, paramname string) interface{}
+//
+//
+///////////////////////////////////////////////////////////////////////////////
+
+// Parses ini file by given file name,
+// returns pointer to app main type - Inifile structure.
+func NewIniFile(filename string) *Inifile {
+	inifile := &Inifile{}
+
+	newIni := newFromFile(filename)
+	clearedIni := removeString(newIni, EMPTY)
+	sectionsBodys := getSectionsBodys(clearedIni)
+	inifile.Sections = sectionsConstruct(sectionsBodys)
+
+	return inifile
+
+}
+
+func (i *Inifile) IniToJson() ([]byte, error) {
+	nosj, err := json.Marshal(i)
+
+	ErrCheck(err)
+
+	return nosj, nil
+}
+
+// Gets Inifile's sections names. Returns []string.
+func (i *Inifile) GetSectionsNames() []string {
+	var secnames []string
+
+	for key := range i.Sections.SectionsMap {
+		secnames = append(secnames, key)
+	}
+
+	return secnames
+}
+
+// Prints section names.
+func (i *Inifile) PrintSectionsNames() {
+	secnames := i.GetSectionsNames()
+
+	for _, str := range secnames {
+		fmt.Println(str)
+	}
+}
+
+// Gets enabled parameters for given section.
+func (i *Inifile) GetParamsEnabled(secname string) []string {
+	var enabled []string
+
+	for _, str := range i.Sections.SectionsMap[secname].Enabled {
+		enabled = append(enabled, str)
+	}
+
+	return enabled
+}
+
+// Prints enabled parameters for given section.
+func (i *Inifile) PrintParamsEnabled(secname string) {
+	paramsenabled := i.GetParamsEnabled(secname)
+
+	for _, str := range paramsenabled {
+		fmt.Println(str)
+	}
+}
+
+// Gets disabled parameters for given section.
+func (i *Inifile) GetParamsDisabled(secname string) []string {
+	var disabled []string
+
+	for _, str := range i.Sections.SectionsMap[secname].Disabled {
+		disabled = append(disabled, str)
+	}
+
+	return disabled
+}
+
+// Prints disabled parameters for given section.
+func (i *Inifile) PrintParamsDisabled(secname string) {
+	paramsdisabled := i.GetParamsEnabled(secname)
+
+	for _, str := range paramsdisabled {
+		fmt.Println(str)
+	}
+}
+
+// Gets parameters of all sections.
+func (i *Inifile) GetAllParams() []string {
+	var params []string
+	secnames := i.GetSectionsNames()
+
+	for _, val := range secnames {
+		for ename := range i.Sections.SectionsMap[val].Enabled {
+			params = append(params, ename)
+		}
+
+		for dname := range i.Sections.SectionsMap[val].Disabled {
+			params = append(params, dname)
+		}
+	}
+
+	return params
+}
+
+func (i *Inifile) GetValue(secname, paramname string) interface{} {
+
+}
+
+// Prints parameters of all sections.
+func (i *Inifile) PrintAllParams() {
+	params := i.GetAllParams()
+
+	for _, str := range params {
+		fmt.Println(str)
+	}
+}
 
 // Reads contain of ini file, returns slice of strings
 func newFromFile(filename string) []string {
@@ -67,6 +204,10 @@ func newFromFile(filename string) []string {
 
 	return newIni
 }
+
+//////////////////////////////////////
+// Private functions and local helpers
+//////////////////////////////////////
 
 // Removes string from slice by given parameter. Empty string, for example.
 func removeString(newIni []string, junk string) []string {
@@ -217,138 +358,6 @@ func clearSectionName(sectionName string) string {
 	sectionName = strings.TrimSuffix(sectionName, RSQUARE)
 
 	return sectionName
-}
-
-type Comments struct {
-	Comms []string `json:"comms"`
-}
-
-type Params struct {
-	Comments Comments          `json:"comments"`
-	Enabled  map[string]string `json:"Enabled"`
-	Disabled map[string]string `json:"Disabled"`
-	Errors   []string          `json:"Errors"`
-}
-
-type Sections struct {
-	SectionsMap map[string]*Params `json:"sectionsmap"`
-}
-
-type Inifile struct {
-	Sections *Sections `json:"sections"`
-}
-
-// Parses ini file by given file name,
-// returns pointer to app main type - Inifile structure.
-func NewIniFile(filename string) *Inifile {
-	inifile := &Inifile{}
-
-	newIni := newFromFile(filename)
-	clearedIni := removeString(newIni, EMPTY)
-	sectionsBodys := getSectionsBodys(clearedIni)
-	inifile.Sections = sectionsConstruct(sectionsBodys)
-
-	return inifile
-
-}
-
-func (i *Inifile) IniToJson() ([]byte, error) {
-	nosj, err := json.Marshal(i)
-
-	ErrCheck(err)
-
-	return nosj, nil
-}
-
-// Gets Inifile's sections names. Returns []string.
-func (i *Inifile) GetSectionsNames() []string {
-	var secnames []string
-
-	for key := range i.Sections.SectionsMap {
-		secnames = append(secnames, key)
-	}
-
-	return secnames
-}
-
-// Prints section names.
-func (i *Inifile) PrintSectionsNames() {
-	secnames := i.GetSectionsNames()
-
-	for _, str := range secnames {
-		fmt.Println(str)
-	}
-}
-
-// Gets enabled parameters for given section.
-func (i *Inifile) GetParamsEnabled(secname string) []string {
-	var enabled []string
-
-	for _, str := range i.Sections.SectionsMap[secname].Enabled {
-		enabled = append(enabled, str)
-	}
-
-	return enabled
-}
-
-// Prints enabled parameters for given section.
-func (i *Inifile) PrintParamsEnabled(secname string) {
-	paramsenabled := i.GetParamsEnabled(secname)
-
-	for _, str := range paramsenabled {
-		fmt.Println(str)
-	}
-}
-
-// Gets disabled parameters for given section.
-func (i *Inifile) GetParamsDisabled(secname string) []string {
-	var disabled []string
-
-	for _, str := range i.Sections.SectionsMap[secname].Disabled {
-		disabled = append(disabled, str)
-	}
-
-	return disabled
-}
-
-// Prints disabled parameters for given section.
-func (i *Inifile) PrintParamsDisabled(secname string) {
-	paramsdisabled := i.GetParamsEnabled(secname)
-
-	for _, str := range paramsdisabled {
-		fmt.Println(str)
-	}
-}
-
-// Gets parameters of all sections.
-func (i *Inifile) GetAllParams() []string {
-	var params []string
-	secnames := i.GetSectionsNames()
-
-	for _, val := range secnames {
-		for ename := range i.Sections.SectionsMap[val].Enabled {
-			params = append(params, ename)
-		}
-
-		for dname := range i.Sections.SectionsMap[val].Disabled {
-			params = append(params, dname)
-		}
-	}
-
-	return params
-}
-
-// Prints parameters of all sections.
-func (i *Inifile) PrintAllParams() {
-	params := i.GetAllParams()
-
-	for _, str := range params {
-		fmt.Println(str)
-	}
-}
-
-func (i *Inifile) FindParam(secname, paramname string) interface{} {
-
 }
 
 func main() {
