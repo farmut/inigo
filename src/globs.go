@@ -1,36 +1,35 @@
-//
+/////////////////////////////////////////////////////
 // @Author: hIMEI
 // @Date:   2017-12-13 00:42:43
-// @Last Modified by:   hIMEI
-// @Last Modified time: 2017-12-13 00:42:43
+// @Copyright © 2017 hIMEI <himei@tuta.io>
+// @license MIT
 /////////////////////////////////////////////////////
-//		 o8o               o8o
-//		 `"'               `"'
-//		oooo  ooo. .oo.   oooo   .oooooooo  .ooooo.
-//		`888  `888P"Y88b  `888  888' `88b  d88' `88b
-//		 888   888   888   888  888   888  888   888
-//		 888   888   888   888  `88bod8P'  888   888
-//		o888o o888o o888o o888o `8oooooo.  `Y8bod8P'
-//		___.ini files parser___ d"     YD
-//		                        "Y88888P'
+//
+//    ██╗███╗   ██╗██╗ ██████╗  ██████╗
+//    ██║████╗  ██║██║██╔════╝ ██╔═══██╗
+//    ██║██╔██╗ ██║██║██║  ███╗██║   ██║
+//    ██║██║╚██╗██║██║██║   ██║██║   ██║
+//    ██║██║ ╚████║██║╚██████╔╝╚██████╔╝
+//    ╚═╝╚═╝  ╚═══╝╚═╝ ╚═════╝  ╚═════╝
+//    ___.ini files parser___
 /////////////////////////////////////////////////////
 
 package inigo
 
 const (
-	BITSIZE0  int = 0
-	BITSIZE8      = 8
-	BITSIZE16     = 16
-	BITSIZE32     = 32
-	BITSIZE64     = 64
+	BITSIZE0  int = 0x0
+	BITSIZE8      = 0x8
+	BITSIZE16     = 0x10
+	BITSIZE32     = 0x20
+	BITSIZE64     = 0x40 // We use only this bitsize for all case.
 )
 
 const (
-	BASE0  int = 0 // We need only this base for all case
-	BASE2      = 2
-	BASE8      = 8
-	BASE10     = 10
-	BASE16     = 16
+	BASE0  int = 0x0
+	BASE2      = 0x2
+	BASE8      = 0x8
+	BASE10     = 0xA
+	BASE16     = 0x10
 )
 
 const (
@@ -41,6 +40,7 @@ const (
 const (
 	COMMA      string = ","
 	ONE               = "1"
+	COLON             = ":"
 	COMM              = ";" // Ordinary comment
 	UCOMM             = "#" // Unix-style comment
 	DUCOMM            = "##"
@@ -69,6 +69,7 @@ const (
 	NOT               = "!"
 	NOTBIT            = "~" // Bitwise NOT
 	OCTAL             = "0"
+	ZERO              = "0"
 	HEX               = "0x"
 	MINUS             = "-"
 	DOT               = "."

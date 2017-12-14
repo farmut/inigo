@@ -1,41 +1,54 @@
 ////////////////////////////////////////////////////
 // @Author: hIMEI
 // @Date:   2017-12-11 22:02:59
-// @Last Modified by:   hIMEI
-// @Last Modified time: 2017-12-11 22:02:59
+// @Copyright © 2017 hIMEI <himei@tuta.io>
+// @license MIT
 /////////////////////////////////////////////////////
-//		 o8o               o8o
-//		 `"'               `"'
-//		oooo  ooo. .oo.   oooo   .oooooooo  .ooooo.
-//		`888  `888P"Y88b  `888  888' `88b  d88' `88b
-//		 888   888   888   888  888   888  888   888
-//		 888   888   888   888  `88bod8P'  888   888
-//		o888o o888o o888o o888o `8oooooo.  `Y8bod8P'
-//		___.ini files parser___ d"     YD
-//		                        "Y88888P'
+//
+//    ██╗███╗   ██╗██╗ ██████╗  ██████╗
+//    ██║████╗  ██║██║██╔════╝ ██╔═══██╗
+//    ██║██╔██╗ ██║██║██║  ███╗██║   ██║
+//    ██║██║╚██╗██║██║██║   ██║██║   ██║
+//    ██║██║ ╚████║██║╚██████╔╝╚██████╔╝
+//    ╚═╝╚═╝  ╚═══╝╚═╝ ╚═════╝  ╚═════╝
+//    ___.ini files parser___
 /////////////////////////////////////////////////////
 
 package inigo
 
 import (
-	"fmt"
-	"reflect"
+	"log"
+	"strconv"
 	"strings"
 	"unicode"
 )
 
+const ENABLED Nbld = true
+
+// Just a Enabled
+type Nbld bool
+
+// Non-instantiated type for logic separation only
+type Checker struct {
+	ENABLED Nbld
+}
+
+// Type representing value-parsing logic. In default case, Inigo
+// stores parameter's value as string. For recognize it
+// true type and parse it true value IniParser's methods used.
 type IniParser struct {
+	Checker
 	Functions map[int]func(string) interface{}
 }
 
 // Parsing functions from strconv package (such as ParseBool(string), ParseUint(string))
-// return parsed value end error value in case of error. But if second err is omitted
-// with blank identifyer, functions return 0. To handle errors and (in same time0 avoiding program
-// evaluation breaks in cases of errors we may match returned value and 0, and also check if given
+// return parsed value end error value in case of error. But if err is omitted
+// with blank identifyer, functions return 0. To handle errors and (in same time) avoiding program
+// evaluation breaks in cases of errors we may match returned value with 0, and also check if given
 // string not realy "0". If 0 (integer) is returned and string != "0", there is error.
 func ErrCheck(value string) string {
 	var errorString string
-	if value != "0" {
+	if value != ZERO {
 		errorString += value + ERROR
 		//errorString +=
 	} else {
@@ -45,21 +58,35 @@ func ErrCheck(value string) string {
 	return errorString
 }
 
+// Common error handling
+func ErrFatal(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// IniParser's constructor
 func NewParser() *IniParser {
 	parser := &IniParser{}
 	parser.Functions = make(map[int]func(string) interface{})
 
 	// Parses boolean
 	parser.Functions[0] = func(value string) interface{} {
-		check, _ := strconv.ParseBool(value)
-
-		if check == 0 && ErrCheck(value) != NOERROR {
-			return ErrCheck(value)
-		} else {
-			return check
+		check := ONE // E.g. error
+		for _, str := range BOOLEANS {
+			if value == str {
+				check = ZERO // No error
+				break
+			}
 		}
 
-		return
+		check = ErrCheck(check)
+
+		if check != NOERROR {
+			return check
+		} else {
+			return value
+		}
 	}
 
 	// Parses int
@@ -71,8 +98,6 @@ func NewParser() *IniParser {
 		} else {
 			return check
 		}
-
-		return
 	}
 
 	// Parses uint
@@ -84,8 +109,6 @@ func NewParser() *IniParser {
 		} else {
 			return check
 		}
-
-		return
 	}
 
 	// Parses float
@@ -97,8 +120,6 @@ func NewParser() *IniParser {
 		} else {
 			return check
 		}
-
-		return
 	}
 
 	// Parses int in binary
@@ -110,8 +131,6 @@ func NewParser() *IniParser {
 		} else {
 			return check
 		}
-
-		return
 	}
 
 	// Parses int in octal
@@ -123,8 +142,6 @@ func NewParser() *IniParser {
 		} else {
 			return check
 		}
-
-		return
 	}
 
 	// Parses int in hexademical
@@ -136,33 +153,29 @@ func NewParser() *IniParser {
 		} else {
 			return check
 		}
-
-		return
 	}
-	////////////////////////////////////////////////////////////////////////////////////////
-	parser.Functions[7] = func(string) interface{} {
-		check, _ := strconv.ParseInt(string, BASE10, BITSIZE64)
 
-		ErrCheck(err)
+	// Parses slice of strings
+	parser.Functions[7] = func(value string) interface{} {
+		check := strings.Split(value, COMMA)
 
 		return check
 	}
 
-	parser.Functions[8] = func(string) interface{} {
-		check, _ := strconv.ParseInt(string, BASE10, BITSIZE64)
+	// Parses map[strings]strings
+	parser.Functions[8] = func(value string) interface{} {
+		check := make(map[string]string)
 
-		ErrCheck(err)
+		bufslice := strings.Split(value, COMMA)
 
-		return check
-	}
-
-	parser.Functions[9] = func(string) interface{} {
-		check, _ := strconv.ParseInt(string, BASE10, BITSIZE64)
-
-		ErrCheck(err)
+		for _, str := range bufslice {
+			splitted := strings.Split(str, COLON)
+			check[splitted[0]] = splitted[1]
+		}
 
 		return check
 	}
+	/* {{{Template}}}
 
 	parser.Functions[10] = func(string) interface{} {
 		check, _ := strconv.ParseInt(string, BASE10, BITSIZE64)
@@ -171,126 +184,15 @@ func NewParser() *IniParser {
 
 		return check
 	}
-
+	*/
 	return parser
 }
 
-func (parser *IniParser) checkPreff(value string) int {
-	var preff int
-	for i, str := range PREFFS {
-		if value == str {
-			preff = i
-			break
-		} else {
-			preff = -1
-		}
-	}
+///////////////////////////////////////////////
+// IniParser's methods
+//////////////////////////////////////////////
 
-	return preff
-}
-
-func (parser *IniParser) checkDigs(value string) bool {
-	check := true
-
-	for _, char := range value {
-		if unicode.IsDigit(rune(char)) != true && char != DOT {
-			check = false
-			break
-		}
-	}
-
-	return check
-}
-
-func (parser *IniParser) checkDot(value string) bool {
-	check := false
-
-	if strings.Contains(value, DOT) == true && strings.Count(value, DOT) < 2 {
-		check = true
-	}
-
-	return check
-}
-
-func (p *IniParser) checkBin(value string) bool {
-	check := true
-
-	for _, char := range value {
-		if char != OCTAL && char != ONE {
-			check = false
-			break
-		}
-	}
-
-	return check
-}
-
-func (parser *IniParser) checkBool(value string) bool {
-	check := false
-
-	for _, str := range BOOLEAN {
-		if value == str {
-			check = true
-			break
-		}
-	}
-
-	return check
-}
-
-func (parser *IniParser) checkChar(value string) bool {
-	check := false
-
-	for _, char := range value {
-		if unicode.IsPunct(rune(char)) == true ||
-			unicode.IsSymbol(rune(char)) == true {
-			check = true
-			break
-		}
-	}
-
-	return check
-}
-
-func (parser *IniParser) checkQuotes(value string) bool {
-	check := false
-
-	if value[0] == DQUOTE && value[len(value)-1] == DQUOTE {
-		check = true
-	}
-
-	return check
-}
-
-func (parser *IniParser) checkString(value string) bool {
-	check := false
-
-	for _, char := range value {
-		if unicode.IsPunct(rune(char)) == true ||
-			unicode.IsSymbol(rune(char)) == true ||
-			unicode.IsLetter(rune(char)) == true {
-			check = true
-			break
-		}
-	}
-
-	return check
-}
-
-/*
-	0	BOOL
-	1	INT64
-	2	UINT64
-	3	FLOAT64
-	4	BIN64
-	5	OCT64
-	6	HEX64
-	7	ARRAY
-	8	MAP
-	9	LIST
-	10	STR
-*/
-func (parser *IniParser) getParserFunc(value string) interface{} {
+func (parser *IniParser) getParserFunc(value string) func(value string) interface{} {
 	var parseFunc func(value string) interface{}
 
 	// Bool
@@ -317,19 +219,20 @@ func (parser *IniParser) getParserFunc(value string) interface{} {
 		parseFunc = parser.Functions[3]
 	}
 
-	// Int64 in bin rep.
+	// Int64 in bin representation
 	if parser.checkBool(value) == true {
 		parseFunc = parser.Functions[4]
 	}
 
-	// Int64 in oct rep.
+	// Int64 in oct representation
 	if parser.checkDot(value) == false &&
 		parser.checkDigs(value) == true &&
-		parser.checkPreff(value) == 0 {
+		parser.checkPreff(value) == 0 &&
+		parser.checkBin(value) == false {
 		parseFunc = parser.Functions[5]
 	}
 
-	// Int64 in hex rep.
+	// Int64 in hex representation
 	if parser.checkDot(value) == false &&
 		parser.checkDigs(value) == true &&
 		parser.checkChar(value) == false &&
@@ -342,6 +245,148 @@ func (parser *IniParser) getParserFunc(value string) interface{} {
 		parseFunc = parser.Functions[7]
 	}
 
+	// map[strings]strings
+	if parser.checkColonsComma(value) == true {
+		parseFunc = parser.Functions[8]
+	}
+
+	return parseFunc
 }
 
-//func (parser *IniParser) ReflectType(value string)
+// Parser main
+func (parser *IniParser) Parse(value string) interface{} {
+	parseFunc := parser.getParserFunc(value)
+
+	return parseFunc(value)
+}
+
+////////////////////////////////////////////////////
+// Checker's methods
+////////////////////////////////////////////////////
+
+// Hex, octal or "-" check
+func (checker Checker) checkPreff(value string) int {
+	var preff int
+	for i, str := range PREFFS {
+		if value == str {
+			preff = i
+			break
+		} else {
+			preff = -1
+		}
+	}
+
+	return preff
+}
+
+// Checks for digits and dot.
+func (checker Checker) checkDigs(value string) bool {
+	check := true
+
+	for _, char := range value {
+		if unicode.IsDigit(rune(char)) != true && string(char) != DOT {
+			check = false
+			break
+		}
+	}
+
+	return check
+}
+
+// Checks for dot. Only one dot in the string allowed.
+func (checker Checker) checkDot(value string) bool {
+	check := false
+
+	if strings.Contains(value, DOT) == true && strings.Count(value, DOT) < 2 {
+		check = true
+	}
+
+	return check
+}
+
+// Checks for binary representation of int.`
+func (checker Checker) checkBin(value string) bool {
+	check := true
+
+	for _, char := range value {
+		if string(char) != OCTAL && string(char) != ONE {
+			check = false
+			break
+		}
+	}
+
+	return check
+}
+
+// Checks for bool.
+func (checker Checker) checkBool(value string) bool {
+	check := false
+
+	for _, str := range BOOLEANS {
+		if value == str {
+			check = true
+			break
+		}
+	}
+
+	return check
+}
+
+// Checks for spesial characters.
+func (checker Checker) checkChar(value string) bool {
+	check := false
+
+	for _, char := range value {
+		if unicode.IsPunct(rune(char)) == true ||
+			unicode.IsSymbol(rune(char)) == true {
+			check = true
+			break
+		}
+	}
+
+	return check
+}
+
+// Checks for quotes.
+func (checker Checker) checkQuotes(value string) bool {
+	check := false
+
+	if value[0] == DQUOTE && value[len(value)-1] == DQUOTE {
+		check = true
+	}
+
+	return check
+}
+
+// Checks for colons and commas for map.
+func (checker Checker) checkColonsComma(value string) bool {
+	check := false
+
+	if strings.Contains(value, COLON) == true &&
+		strings.Contains(value, COMMA) == true &&
+		strings.Count(value, COLON) == strings.Count(value, COMMA) {
+		check = true
+	}
+
+	return check
+}
+
+// Common check for string.
+func (checker Checker) checkString(value string) bool {
+	check := false
+
+	for _, char := range value {
+		if unicode.IsPunct(rune(char)) == true ||
+			unicode.IsSymbol(rune(char)) == true ||
+			unicode.IsLetter(rune(char)) == true {
+			check = true
+			break
+		}
+	}
+
+	return check
+}
+
+//                                                            |⛀ ⛂ ⛀|
+// TODO: Logic and boolean expressions parse, default string  |⛀ ⛀ ⛂|
+//                                                            |⛂ ⛂ ⛂|
