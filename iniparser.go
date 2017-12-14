@@ -28,16 +28,36 @@ const ENABLED Nbld = true
 // Just a Enabled
 type Nbld bool
 
-// Non-instantiated type for logic separation only
+// Non-instantiated type for value-parsing logic separation.
 type Checker struct {
+
+	// Boolean const
 	ENABLED Nbld
+}
+
+// Non-instantiated type fo Tick() method
+type Ticker struct {
+
+	// Boolean const
+	ENABLED Nbld
+}
+
+func (t Ticker) Tick() int {
+
 }
 
 // Type representing value-parsing logic. In default case, Inigo stores parameter's
 // value as string. For recognize it true type and parse it true
 // value IniParser's methods used.
 type IniParser struct {
+
+	// Embedded type Checker gives the methods for pre-parsing value check.
 	Checker
+
+	// Embedd type Ticker to provide Tick() method
+	Ticker
+
+	// Parse functions selector
 	Functions map[int]func(string) interface{}
 }
 
@@ -72,15 +92,17 @@ func NewParser() *IniParser {
 
 	// Parses boolean
 	parser.Functions[0] = func(value string) interface{} {
-		check := ONE // E.g. error
+		var check string // E.g. error
 		for _, str := range BOOLEANS {
 			if value == str {
 				check = ZERO // No error
 				break
+			} else {
+				check = ONE
 			}
 		}
 
-		check = ErrCheck(check)
+		newcheck = ErrCheck(check)
 
 		if check != NOERROR {
 			return check
@@ -270,7 +292,7 @@ func (parser *IniParser) Parse(value string) interface{} {
 func (checker Checker) checkPreff(value string) int {
 	var preff int
 	for i, str := range PREFFS {
-		if value == str {
+		if strings.HasPrefix(value, str) == true {
 			preff = i
 			break
 		} else {

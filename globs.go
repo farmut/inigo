@@ -16,6 +16,7 @@
 
 package inigo
 
+// Constants for numbers parsing options
 const (
 	BITSIZE0  int = 0x0
 	BITSIZE8      = 0x8
@@ -24,6 +25,7 @@ const (
 	BITSIZE64     = 0x40 // We use only this bitsize for all case.
 )
 
+// Constants for numbers parsing options
 const (
 	BASE0  int = 0x0
 	BASE2      = 0x2
@@ -32,11 +34,13 @@ const (
 	BASE16     = 0x10
 )
 
+// Constants for parsing errors handling
 const (
 	ERROR   string = "; PARSING ERROR"
 	NOERROR        = "NOERROR"
 )
 
+// Usefull string constants
 const (
 	COMMA      string = ","
 	ONE               = "1"
@@ -46,6 +50,7 @@ const (
 	DUCOMM            = "##"
 	EMPTY             = ""
 	SPACE             = " "
+	CSPACE            = ", "
 	LSQUARE           = "["
 	RSQUARE           = "]"
 	LFIG              = "{"
@@ -75,18 +80,21 @@ const (
 	DOT               = "."
 )
 
+// Constants for comments parsing
 var COMMS = []string{
 	COMM,
 	UCOMM,
 	DUCOMM,
 }
 
+// Constants for octal, hexademical and negative values parsing
 var PREFFS = []string{
 	OCTAL,
 	HEX,
 	MINUS,
 }
 
+// Constants for boolean values parsing
 var BOOLEANS = []string{
 	UPPERTRUE,
 	CTRUE,
@@ -96,12 +104,14 @@ var BOOLEANS = []string{
 	LOWERFALSE,
 }
 
+// Constants for logical expressions parsing
 var LOGICS = []string{
 	AND,
 	OR,
 	NOT,
 }
 
+// Constants for bitwise expressions parsing
 var BITS = []string{
 	ORBIT,
 	XORBIT,

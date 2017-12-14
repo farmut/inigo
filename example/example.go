@@ -4,7 +4,7 @@
  * @Author: hIMEI
  * @Date:   2017-12-13 17:49:49
  * @Last Modified by:   hIMEI
- * @Last Modified time: 2017-12-14 02:09:31
+ * @Last Modified time: 2017-12-14 17:42:44
  *
  */
 
@@ -17,7 +17,8 @@ import (
 )
 
 func main() {
-	filename := "../bin/new.ini"
+	//filename := "example.ini"
+	filename := "short.ini"
 	//filename := "example_php.ini"
 
 	ini := inigo.NewIniFile(filename)
@@ -28,14 +29,33 @@ func main() {
 	//  params := ini.GetAllParams()
 	ini.PrintAllParams()
 
-	sections := ini.GetSectionsNames()
+	fmt.Println("___")
 
-	for _, str := range sections {
-		enParams := ini.GetParamsEnabled(str)
+	ini.PrintSectionsNames()
+	fmt.Println("___")
 
-		for _, param := range enParams {
-			value := ini.GetValue(str, param)
-			fmt.Println(value)
+	//param := ini.GetParamByName("[SECTION1]", "angryByrds")
+
+	x := inigo.HEX
+	for _, con := range inigo.PREFFS {
+		if x == con {
+			fmt.Println(con)
 		}
 	}
+
+	fmt.Println("___")
+	value := ini.GetValue("[SECTION1]", "param0")
+	fmt.Println(value)
+
+	/*
+		for _, str := range sections {
+			enParams := ini.GetParamsEnabled(str)
+
+			for _, param := range enParams {
+				value := ini.GetValue(str, param)
+				fmt.Println(value)
+			}
+		}
+	*/
+
 }

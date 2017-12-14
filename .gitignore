@@ -54,3 +54,7 @@ sftp-config.json
 /notes/*
 inigo
 change.log
+
+###Build objects###
+
+build.sh

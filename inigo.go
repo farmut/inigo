@@ -19,29 +19,46 @@ package inigo
 //package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
-	"os"
-	"strings"
 )
 
+// String type for commented strings in INI file.
 type Comments struct {
+	// Slice of commented strings
 	Comms []string `json:"comms"`
 }
 
+// Type for parameters containing strings in INI file. Here's different fields
+// for enabled and disabled (commented) params, for comments and field for store
+// strings with syntax errors.
 type Params struct {
-	Comments Comments          `json:"comments"`
-	Enabled  map[string]string `json:"Enabled"`
+
+	// Slice of commented strings
+	Comments Comments `json:"comments"`
+
+	// Not commented parameter strings
+	Enabled map[string]string `json:"Enabled"`
+
+	// Commented parameter strings
 	Disabled map[string]string `json:"Disabled"`
-	Errors   []string          `json:"Errors"`
+
+	// Field to strore strings with syntx errors. []string
+	Errors []string `json:"Errors"`
 }
 
+// Type for sections. Sections is a blocks of INI file with unic name and structure
+// Params as body.
 type Sections struct {
+
+	// Map [section_name]parameter_block.
 	SectionsMap map[string]*Params `json:"sectionsmap"`
 }
 
+// Main data type. It is also API methods reciever. Contains Sections field.
 type Inifile struct {
+
+	// Map [section_name]parameter_block.
 	Sections *Sections `json:"sections"`
 }
 
@@ -49,16 +66,16 @@ type Inifile struct {
 //
 //                           **Library's API is here:**
 //
-///////////////////////////////////////////////////////////////////////////////
+
 //
 // * Functions
 // 		- NewIniFile(filename string) *Inifile
-//
+
 // * Methods
 // 		- IniToJson() ([]byte, error)
 // 		- GetSectionsNames() []string
 // 		- PrintSectionsNames()
-// 		- GetSectionByName(secname string) *Params
+// 		- GetSectionParams(secname string) *Params
 // 		- GetParamByName(params *Params, paramname string) string
 // 		- GetParamsEnabled(secname string) []string
 // 		- PrintParamsEnabled(secname string)
@@ -69,7 +86,6 @@ type Inifile struct {
 // 		- GetValue(secname, paramname string) interface{}
 //
 //
-///////////////////////////////////////////////////////////////////////////////
 
 // Parses ini file by given file name,
 // returns pointer to app main type - Inifile structure.
@@ -113,12 +129,13 @@ func (i *Inifile) PrintSectionsNames() {
 }
 
 // Gets value by section name. Returns *Params
-func (i *Inifile) GetSectionByName(secname string) *Params {
+func (i *Inifile) GetSectionParams(secname string) *Params {
 	return i.Sections.SectionsMap[secname]
 }
 
 // Gets stored string representation of enabled parameter's value by given parameter name.
-func (i *Inifile) GetParamByName(params *Params, paramname string) string {
+func (i *Inifile) GetParamByName(secname, paramname string) string {
+	params := i.GetSectionParams(secname)
 	return params.Enabled[paramname]
 }
 
@@ -184,8 +201,8 @@ func (i *Inifile) GetAllParams() []string {
 // Trys to get underlying value of string value. In case of error return string with error message.
 func (i *Inifile) GetValue(secname, paramname string) interface{} {
 	parser := NewParser()
-	params := i.GetSectionByName(secname)
-	value := i.GetParamByName(params, paramname)
+	//params := i.GetSectionParams(secname)
+	value := i.GetParamByName(secname, paramname)
 
 	parsed := parser.Parse(value)
 
@@ -199,180 +216,4 @@ func (i *Inifile) PrintAllParams() {
 	for _, str := range params {
 		fmt.Println(str)
 	}
-}
-
-//////////////////////////////////////
-// Private functions and local helpers
-//////////////////////////////////////
-
-// Reads contain of ini file, returns slice of strings
-func newFromFile(filename string) []string {
-	var newIni []string
-	file, _ := os.Open(filename)
-
-	//	ErrCheck(err)
-
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-
-	for scanner.Scan() {
-		newIni = append(newIni, scanner.Text())
-	}
-
-	return newIni
-}
-
-// Removes string from slice by given parameter. Empty string, for example.
-func removeString(newIni []string, junk string) []string {
-	for i, str := range newIni {
-		if str == junk {
-			newIni = append(newIni[:i], newIni[i+1:]...)
-		}
-	}
-
-	return newIni
-}
-
-// Finds given string's index in slice
-func findIndexByName(names []string, name string) int {
-	var index int
-	for i, str := range names {
-		if str == name {
-			index = i
-		}
-	}
-
-	return index
-}
-
-// Parses given parameter name, returns false in case of syntax errors.
-// If syntax is correct, returns true
-func parseParamName(paramname string) bool {
-	var check bool
-
-	if strings.Contains(paramname, SPACE) == true &&
-		strings.Index(paramname, SPACE) != (len(paramname)-1) {
-		check = false
-	} else if strings.Contains(paramname, COMM) == true ||
-		strings.Contains(paramname, UCOMM) == true {
-		check = false
-	} else {
-		check = true
-	}
-
-	return check
-}
-
-// Gets sections names, e.g, [Name]
-func getSections(clearedIni []string) []string {
-	var sectionNames []string
-
-	for _, str := range clearedIni {
-		if (string(str[0]) == LSQUARE) && (str[len(str)-1:] == RSQUARE) {
-			sectionNames = append(sectionNames, str)
-		}
-	}
-
-	return sectionNames
-}
-
-// Splits given paramString with EQUAL
-func splitParamString(paramString string) []string {
-	splitted := strings.Split(paramString, EQUAL)
-
-	return splitted
-}
-
-// Join []string to string with "=" as delimiter
-func joinParamStrings(creds []string) string {
-	paramString := strings.Join(creds, EQUAL)
-
-	return paramString
-}
-
-// Constructor for Params
-func paramsConstruct(body []string) *Params {
-	params := &Params{}
-	params.Enabled = make(map[string]string)
-	params.Disabled = make(map[string]string)
-
-	for _, str := range body {
-		if strings.Contains(str, EQUAL) == true {
-			if (string(str[0]) != COMM) || (string(str[0]) != UCOMM) {
-				splitted := splitParamString(str)
-				if splitted[1] != EMPTY {
-					params.Enabled[splitted[0]] = splitted[1]
-				} else {
-					params.Enabled[splitted[0]] = NONE
-				}
-
-			} else {
-				splitted := splitParamString(str)
-				if splitted[1] != EMPTY {
-					params.Disabled[splitted[0]] = splitted[1]
-				} else {
-					params.Disabled[splitted[0]] = NONE
-				}
-			}
-		}
-
-		if (strings.Contains(str, EQUAL) != true) &&
-			((string(str[0]) == COMM) || (string(str[0]) == UCOMM)) {
-			params.Comments.Comms = append(params.Comments.Comms, str)
-		}
-	}
-
-	return params
-}
-
-// Constructor for Sections
-func sectionsConstruct(sectionsMap map[string][]string) *Sections {
-	sections := &Sections{}
-	sections.SectionsMap = make(map[string]*Params)
-
-	for key, value := range sectionsMap {
-		sections.SectionsMap[key] = paramsConstruct(value)
-	}
-
-	return sections
-}
-
-// Gets unparsed []string as body of each Section
-func getSectionsBodys(clearedIni []string) map[string][]string {
-	sectionsMap := make(map[string][]string)
-	sectionNames := getSections(clearedIni)
-	sectionHeadless := clearedIni[:findIndexByName(clearedIni, sectionNames[0])]
-
-	// For parameters without section name e.g. GLOBAL parameters
-	sectionsMap[GLOBAL] = sectionHeadless
-
-	for i, str := range clearedIni {
-		for j, name := range sectionNames {
-			if str == name {
-
-				// Index is always in range of slice
-				if j != (len(sectionNames) - 1) {
-					nextName := sectionNames[j+1]
-					nextInd := findIndexByName(clearedIni, nextName)
-					body := clearedIni[i:nextInd]
-					sectionsMap[name] = body
-				} else {
-					body := clearedIni[i:]
-					sectionsMap[name] = body
-				}
-
-			}
-		}
-	}
-
-	return sectionsMap
-}
-
-// Removes "[" and "]" from section name
-func clearSectionName(sectionName string) string {
-	sectionName = strings.TrimPrefix(sectionName, LSQUARE)
-	sectionName = strings.TrimSuffix(sectionName, RSQUARE)
-
-	return sectionName
 }
