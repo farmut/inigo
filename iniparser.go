@@ -33,9 +33,9 @@ type Checker struct {
 	ENABLED Nbld
 }
 
-// Type representing value-parsing logic. In default case, Inigo
-// stores parameter's value as string. For recognize it
-// true type and parse it true value IniParser's methods used.
+// Type representing value-parsing logic. In default case, Inigo stores parameter's
+// value as string. For recognize it true type and parse it true
+// value IniParser's methods used.
 type IniParser struct {
 	Checker
 	Functions map[int]func(string) interface{}
@@ -192,6 +192,7 @@ func NewParser() *IniParser {
 // IniParser's methods
 //////////////////////////////////////////////
 
+// Primary checker and functions selector.
 func (parser *IniParser) getParserFunc(value string) func(value string) interface{} {
 	var parseFunc func(value string) interface{}
 

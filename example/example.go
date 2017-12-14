@@ -4,7 +4,7 @@
  * @Author: hIMEI
  * @Date:   2017-12-13 17:49:49
  * @Last Modified by:   hIMEI
- * @Last Modified time: 2017-12-14 00:21:38
+ * @Last Modified time: 2017-12-14 02:09:31
  *
  */
 
@@ -13,12 +13,12 @@ package main
 import (
 	"fmt"
 
-	inigo "bitbucket.org/hIMEI/inigo/src"
+	inigo "bitbucket.org/hIMEI/inigo"
 )
 
 func main() {
-	//filename := "example.ini"
-	filename := "example_php.ini"
+	filename := "../bin/new.ini"
+	//filename := "example_php.ini"
 
 	ini := inigo.NewIniFile(filename)
 

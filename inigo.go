@@ -85,6 +85,7 @@ func NewIniFile(filename string) *Inifile {
 
 }
 
+// Json-marshalizer
 func (i *Inifile) IniToJson() ([]byte, error) {
 	nosj, _ := json.Marshal(i)
 
@@ -179,10 +180,8 @@ func (i *Inifile) GetAllParams() []string {
 	return params
 }
 
-// Parses parameter value.
-// Method calls IniParser's constructor end then calls parser's Parse() method.
-// Trys to get underlying value of string value.
-// In case of error return string with error message.
+// Parses parameter value. Method calls IniParser's constructor end then calls parser's Parse() method.
+// Trys to get underlying value of string value. In case of error return string with error message.
 func (i *Inifile) GetValue(secname, paramname string) interface{} {
 	parser := NewParser()
 	params := i.GetSectionByName(secname)
