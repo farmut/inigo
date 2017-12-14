@@ -1,32 +1,28 @@
 /////////////////////////////////////////////////////
 // @Author: hIMEI
 // @Date:   2017-12-06 07:15:25
-// @Last Modified by:   hIMEI
-// @Last Modified time: 2017-12-06 07:15:25
+// @Copyright © 2017 hIMEI <himei@tuta.io>
+// @license MIT
 /////////////////////////////////////////////////////
-//		 o8o               o8o
-//		 `"'               `"'
-//		oooo  ooo. .oo.   oooo   .oooooooo  .ooooo.
-//		`888  `888P"Y88b  `888  888' `88b  d88' `88b
-//		 888   888   888   888  888   888  888   888
-//		 888   888   888   888  `88bod8P'  888   888
-//		o888o o888o o888o o888o `8oooooo.  `Y8bod8P'
-//		___.ini files parser___ d"     YD
-//		                        "Y88888P'
+//
+//    ██╗███╗   ██╗██╗ ██████╗  ██████╗
+//    ██║████╗  ██║██║██╔════╝ ██╔═══██╗
+//    ██║██╔██╗ ██║██║██║  ███╗██║   ██║
+//    ██║██║╚██╗██║██║██║   ██║██║   ██║
+//    ██║██║ ╚████║██║╚██████╔╝╚██████╔╝
+//    ╚═╝╚═╝  ╚═══╝╚═╝ ╚═════╝  ╚═════╝
+//    ___.ini files parser___
 /////////////////////////////////////////////////////
 
-//package inigo
+package inigo
 
-package main
+//package main
 
 import (
 	"bufio"
-	"fmt"
-	"log"
-	"os"
-	//"sort"
 	"encoding/json"
-	//"strconv"
+	"fmt"
+	"os"
 	"strings"
 )
 
@@ -53,8 +49,7 @@ type Inifile struct {
 //
 //                           **Library's API is here:**
 //
-// * API version
-//   v1.0.0
+///////////////////////////////////////////////////////////////////////////////
 //
 // * Functions
 // 		- NewIniFile(filename string) *Inifile
@@ -63,6 +58,8 @@ type Inifile struct {
 // 		- IniToJson() ([]byte, error)
 // 		- GetSectionsNames() []string
 // 		- PrintSectionsNames()
+// 		- GetSectionByName(secname string) *Params
+// 		- GetParamByName(params *Params, paramname string) string
 // 		- GetParamsEnabled(secname string) []string
 // 		- PrintParamsEnabled(secname string)
 // 		- GetParamsDisabled(secname string) []string
@@ -89,9 +86,7 @@ func NewIniFile(filename string) *Inifile {
 }
 
 func (i *Inifile) IniToJson() ([]byte, error) {
-	nosj, err := json.Marshal(i)
-
-	ErrCheck(err)
+	nosj, _ := json.Marshal(i)
 
 	return nosj, nil
 }
@@ -114,6 +109,16 @@ func (i *Inifile) PrintSectionsNames() {
 	for _, str := range secnames {
 		fmt.Println(str)
 	}
+}
+
+// Gets value by section name. Returns *Params
+func (i *Inifile) GetSectionByName(secname string) *Params {
+	return i.Sections.SectionsMap[secname]
+}
+
+// Gets stored string representation of enabled parameter's value by given parameter name.
+func (i *Inifile) GetParamByName(params *Params, paramname string) string {
+	return params.Enabled[paramname]
 }
 
 // Gets enabled parameters for given section.
@@ -174,8 +179,18 @@ func (i *Inifile) GetAllParams() []string {
 	return params
 }
 
+// Parses parameter value.
+// Method calls IniParser's constructor end then calls parser's Parse() method.
+// Trys to get underlying value of string value.
+// In case of error return string with error message.
 func (i *Inifile) GetValue(secname, paramname string) interface{} {
+	parser := NewParser()
+	params := i.GetSectionByName(secname)
+	value := i.GetParamByName(params, paramname)
 
+	parsed := parser.Parse(value)
+
+	return parsed
 }
 
 // Prints parameters of all sections.
@@ -187,12 +202,16 @@ func (i *Inifile) PrintAllParams() {
 	}
 }
 
+//////////////////////////////////////
+// Private functions and local helpers
+//////////////////////////////////////
+
 // Reads contain of ini file, returns slice of strings
 func newFromFile(filename string) []string {
 	var newIni []string
-	file, err := os.Open(filename)
+	file, _ := os.Open(filename)
 
-	ErrCheck(err)
+	//	ErrCheck(err)
 
 	defer file.Close()
 
@@ -204,10 +223,6 @@ func newFromFile(filename string) []string {
 
 	return newIni
 }
-
-//////////////////////////////////////
-// Private functions and local helpers
-//////////////////////////////////////
 
 // Removes string from slice by given parameter. Empty string, for example.
 func removeString(newIni []string, junk string) []string {
@@ -232,7 +247,7 @@ func findIndexByName(names []string, name string) int {
 	return index
 }
 
-// Parses geven parameter name, returns false in case of syntax errors.
+// Parses given parameter name, returns false in case of syntax errors.
 // If syntax is correct, returns true
 func parseParamName(paramname string) bool {
 	var check bool
@@ -270,8 +285,11 @@ func splitParamString(paramString string) []string {
 	return splitted
 }
 
-func joinParamStrings() {
+// Join []string to string with "=" as delimiter
+func joinParamStrings(creds []string) string {
+	paramString := strings.Join(creds, EQUAL)
 
+	return paramString
 }
 
 // Constructor for Params
@@ -358,20 +376,4 @@ func clearSectionName(sectionName string) string {
 	sectionName = strings.TrimSuffix(sectionName, RSQUARE)
 
 	return sectionName
-}
-
-func main() {
-	//filename := "../example/ex.ini"
-	filename := "../example/ex_php.ini"
-
-	ini := NewIniFile(filename)
-
-	//iniString := ini.String()
-
-	//fmt.Println(iniString)
-
-	ini.PrintSectionsNames()
-	fmt.Println(EMPTY)
-
-	ini.PrintAllParams()
 }

@@ -1,22 +1,24 @@
 # Inigo
 
-Golang written `INI` files **parser** library.
+`INI files` **parser** library for Golang applications. 
+    
+    ☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷
 
-           o8o               o8o
-           `"'               `"'
-          oooo  ooo. .oo.   oooo   .oooooooo  .ooooo.
-          `888  `888P"Y88b  `888  888' `88b  d88' `88b
-           888   888   888   888  888   888  888   888
-           888   888   888   888  `88bod8P'  888   888
-          o888o o888o o888o o888o `8oooooo.  `Y8bod8P'
-          ___.ini files parser___ d"     YD
-                                  "Y88888P'
+    ██╗███╗   ██╗██╗ ██████╗  ██████╗ 
+    ██║████╗  ██║██║██╔════╝ ██╔═══██╗
+    ██║██╔██╗ ██║██║██║  ███╗██║   ██║
+    ██║██║╚██╗██║██║██║   ██║██║   ██║
+    ██║██║ ╚████║██║╚██████╔╝╚██████╔╝
+    ╚═╝╚═╝  ╚═══╝╚═╝ ╚═════╝  ╚═════╝ 
+         ___.ini files parser___
+    ☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷☷
 
 1. **Description**
     * **Inigo**
       - Project status
       - Current version
       - Credits
+    * **Ini files**
 2. **Install**
 3. **Usage**
 4. **Examples**
@@ -28,24 +30,50 @@ Golang written `INI` files **parser** library.
 
 ### Inigo
 
-**Inigo** is a Golang library with wide range recognised options and with some writing features. **Inigo**
-may **read** given file, **parse** all containing data, **make** some changes, **retrieve** all data in 
-form `key:value` and **convert** parsed data to JSON, XML and YAML (TODO). Based on common description 
-of `INI files`, it extends stansart syntax with many possible data types.
-
-About `INI files` format used, see **"Ini files format"** in this paper.
+**Inigo** is a Golang library with wide range recognised options. It **read** given file, 
+**parse** all containing data, **make** some changes, **retrieve** all data in form `key:value` and 
+**convert** parsed data to JSON, XML and YAML (TODO). Based on common description of `INI files`, it 
+extends standart syntax with many possible data types.
 
 #### Project status
 
-Development since @Date:   2017-12-06 07:15:25
-
-Active since
+Active since 2017-12-06
 
 #### Current version
 
 #### Credits
 
-@Autor hIMEI <hIMEI@tuta.io>
+`@Autor hIMEI <hIMEI@tuta.io>`
+
+`@Copyright © 2017 hIMEI <himei@tuta.io>`
+
+`@license MIT`
+
+### Ini files
+
+###### Short info about `INI files` from [Wikipedia](https://en.wikipedia.org/wiki/INI_file).
+
+> The `INI file` format is an informal standard for configuration files for some platforms or software. 
+INI files are simple text files with a basic structure composed of sections, properties, and values.
+The name "INI file" comes from the commonly used filename extension `.INI`, which stands for 
+_"initialization"_.
+
+> In **MS-DOS and 16-bit Windows** platforms up through **Windows ME**, the `INI file` served as the primary 
+mechanism to configure operating system and installed applications features, such as device drivers, 
+fonts, startup launchers, and things that needed to be initialized in booting Windows. `INI files` 
+were also generally used by applications to store their individual settings.
+
+> Starting with **Windows NT**, Microsoft favored the use of the registry, and began to steer 
+developers away from using INI files for configuration. But the APIs still exist in Windows, however, 
+and developers may still use them.
+
+> **Linux and Unix** systems also use a similar file format for system configuration. In addition,
+platform-agnostic software may use this file format for configuration. It is human-readable and simple 
+to parse, so it is a usable format for configuration files that do not require much greater complexity.
+For example, the platform-agnostic **PHP** uses the `INI` format for its `php.ini` configuration file in 
+both Windows and **Linux** systems.
+
+Fo more about `INI files` format used, see **"Ini files format"** section in this paper.
 
 ## Install
 
@@ -72,7 +100,7 @@ _value_, delimited by an **equals sign** `=`. The _name_ appears to the left of 
 
 **Keys** may (but need not) be grouped into arbitrarily named **sections**. The section name appears on a
 line by itself, in square brackets `[` and `]`. All **keys** after the **section** declaration are associated
-with that **section**. There is no explicit **"end of section" delimiter**; **sections** end at the next 
+with that **section**. There is no explicit **"end of section" delimiter** so **sections** end at the next 
 **section** declaration, or the end of the file. **Sections** may not be nested.
 
 **Note:** In the Windows implementation the **section** cannot contain the character closing bracket `]`.
@@ -148,7 +176,7 @@ But **Inigo** don't recognize (_yet_) such syntax.
 #### Examples of INI files
 
 See examples of `INI files` in `example` folder of app's repo.
-One file, `example/ex.ini`, is the simple `INI file` for illustration of base `INI` features:
+One file, `example/example.ini`, is the simple `INI file` for illustration of base `INI` features:
 
     ;;;;;;;;;;;;;;;;;;;;;
     ;; ex.ini file begin
@@ -177,30 +205,34 @@ One file, `example/ex.ini`, is the simple `INI file` for illustration of base `I
     ColorOfPolarBear="dirty white"
     ColorOfTiger=yellow black striped # error
 
-    ;IQ parameter is an proportion animalIQ/humanIQ.
-    ; Not always IQ < 1, right?
-    ; begin of the birds section
-
-    dolphinIQ=1.1232286
-    catIQ=0.999999999
-
     ; Insects it is a very socialized creatures
 
     [insects]
 
+    ; Number of spider's legs
+
+    spiderLegs=0x8
+
+    ; Other insects have 6 legs
+
+    other_insect_legs=00000110
+
     ; Case of ants
-    ColonyPopulation=122323754
+    ColonyPopulation=137540000
 
     ; Case of bees
-    Colonypopulation=1224345.354435646345435
+    Colonypopulation=1200005.3544345435
 
     ; Total amounts of insects
     Total="very big number"
+
+    ; begin of the birds section
 
     [Birds]
 
     bird1=cock, crown, eagle
     bird2=cuckoo
+    angryByrds=first:bird00x2, second:antibird, third:hyperBird
 
     ; Lets say pterodactyl
     ; is not a dynozaurus
@@ -211,13 +243,14 @@ One file, `example/ex.ini`, is the simple `INI file` for illustration of base `I
 
     ; this is the end
 
-Other file, `examples/ex_php.ini` is realy `php.ini` file representing more **complex case**.
-
-## Install
-
-## Usage
+Other file, `examples/example_php.ini` is realy `php.ini` file representing more **complex case**.
 
 ## Contrib
 
-## TODO
+Feel free to make pull request.
 
+## TODO  
+
+                                              |⛀ ⛂ ⛀|
+                                              |⛀ ⛀ ⛂|
+                                              |⛂ ⛂ ⛂|
