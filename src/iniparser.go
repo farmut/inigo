@@ -257,7 +257,8 @@ func (parser *IniParser) getParserFunc(value string) func(value string) interfac
 func (parser *IniParser) Parse(value string) interface{} {
 	parseFunc := parser.getParserFunc(value)
 
-	return parseFunc(value)
+	res := parseFunc(value)
+	return res
 }
 
 ////////////////////////////////////////////////////
