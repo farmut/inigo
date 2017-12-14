@@ -41,6 +41,8 @@ Active since 2017-12-06
 
 #### Current version
 
+`@Version v0.1dev`
+
 #### Credits
 
 `@Autor hIMEI <hIMEI@tuta.io>`
