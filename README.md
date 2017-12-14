@@ -28,22 +28,33 @@
 
 ## Description
 
-### Inigo
+#### Inigo
 
-**Inigo** is a Golang library with wide range recognised options. It **read** given file, 
-**parse** all containing data, **make** some changes, **retrieve** all data in form `key:value` and 
-**convert** parsed data to JSON, XML and YAML (TODO). Based on common description of `INI files`, it 
-extends standart syntax with many possible data types.
+**Inigo** is a Golang library with wide range recognised options.
 
-#### Project status
+**Features:**
+
+* 
+
+Ask [Wikipedia](https://en.wikipedia.org/wiki/INI_file) for more words about `INI files`, but most
+pricipal words is
+
+> The `INI file` format is not well defined
+
+It means we are not "hardcoded" into some standart, and we have more space for moving (in our beautifull
+**Linux**'s world). One's more about Linux: many of **Unix/Linux** sowtware uses config files with syntax  
+similary near to `INI files` one. For example, `.conf` files or Tor's `/etc/tor/torrc` 
+config file. **Inigo** try to parse such configs too.
+
+##### Project status
 
 Active since 2017-12-06
 
-#### Current version
+##### Current version
 
 `@Version v0.1dev`
 
-#### Credits
+##### Credits
 
 `@Autor hIMEI <hIMEI@tuta.io>`
 
@@ -51,7 +62,51 @@ Active since 2017-12-06
 
 `@license MIT`
 
-### Ini files
+## Install
+
+**Inigo** project uses standart installation way with `go get`
+
+To install **Inigo** to your $GOPATH, enter:
+
+```sh
+go get -u github.com/hIMEI29A/inigo
+```
+
+Install with **Glide**:
+
+```sh
+##
+```
+
+## Usage
+
+To use **Inigo** in your code, import it with next snippet:
+
+```go
+import (
+    inigo "github.com/hIMEI29A/inigo"
+)
+```
+
+After it, you may call library's API methods such as
+
+```go
+func main() {
+    filename := "example.ini"
+
+    inifile := inigo.NewIniFile(filename)
+
+    params := inifile.GetAllParams()
+
+    inifile.PrintAllParams()
+
+    value := inifile.GetValue(section1, parameter1)
+
+    fmt.Println(value)
+}
+```
+
+#### Ini files
 
 ###### Short info about `INI files` from [Wikipedia](https://en.wikipedia.org/wiki/INI_file).
 
@@ -77,26 +132,41 @@ both Windows and **Linux** systems.
 
 Fo more about `INI files` format used, see **"Ini files format"** section in this paper.
 
-## Install
-
-## Usage
-
 ## Examples
 
 ## Ini file format
 
-As there is no strict specification for `INI` format, so **Inigo** is based on common description of it in 
-[Wikipedia](https://en.wikipedia.org/wiki/INI_file). Here is the basic notes from there.
+**Inigo** use next conception and rules of `INI` syntax:
 
-#### Keys or Parameters
+1. **Ini file structure**
 
-The basic element contained in an `INI file` is the **key** or property. Every **key** has a _name_ and a 
-_value_, delimited by an **equals sign** `=`. The _name_ appears to the left of the equals sign.
+        <GLOBAL PARAMETERS>
+
+        ; commented line
+
+        [SECTION1]
+
+            PARAM1=value1
+
+            PARAM1=value2
+
+        [SECTION2]
+
+            PARAM3=value3
+
+            ...
+
+2. **Section**
+
+3. **Parameters**
+
+**Parameter names** parses as string always. **Parameter name** may contain any symbols except _space_.
+    
+    parameter1="Iggy Pop"
+    new parameter=20.6465 // Error
 
 **Note:** In the Windows implementation the key cannot contain the characters equal sign `=` or semicolon
  `;` as these are reserved characters. The _value_ can contain **any character**.
-
-    name=value
 
 #### Sections
 

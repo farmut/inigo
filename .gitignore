@@ -53,3 +53,4 @@ sftp-config.json
 # *.ini
 /notes/*
 inigo
+change.log
