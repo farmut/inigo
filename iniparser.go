@@ -35,17 +35,6 @@ type Checker struct {
 	ENABLED Nbld
 }
 
-// Non-instantiated type fo Tick() method
-type Ticker struct {
-
-	// Boolean const
-	ENABLED Nbld
-}
-
-func (t Ticker) Tick() int {
-
-}
-
 // Type representing value-parsing logic. In default case, Inigo stores parameter's
 // value as string. For recognize it true type and parse it true
 // value IniParser's methods used.
@@ -53,9 +42,6 @@ type IniParser struct {
 
 	// Embedded type Checker gives the methods for pre-parsing value check.
 	Checker
-
-	// Embedd type Ticker to provide Tick() method
-	Ticker
 
 	// Parse functions selector
 	Functions map[int]func(string) interface{}
@@ -102,7 +88,7 @@ func NewParser() *IniParser {
 			}
 		}
 
-		newcheck = ErrCheck(check)
+		check = ErrCheck(check)
 
 		if check != NOERROR {
 			return check

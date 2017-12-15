@@ -4,7 +4,7 @@
  * @Author: hIMEI
  * @Date:   2017-12-13 17:49:49
  * @Last Modified by:   hIMEI
- * @Last Modified time: 2017-12-14 17:42:44
+ * @Last Modified time: 2017-12-14 19:52:07
  *
  */
 
@@ -44,7 +44,7 @@ func main() {
 	}
 
 	fmt.Println("___")
-	value := ini.GetValue("[SECTION1]", "param0")
+	value := ini.GetValue("[SECTION1]", "param6")
 	fmt.Println(value)
 
 	/*
