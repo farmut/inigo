@@ -4,7 +4,7 @@
  * @Author: hIMEI
  * @Date:   2017-12-13 17:49:49
  * @Last Modified by:   hIMEI
- * @Last Modified time: 2017-12-14 19:52:07
+ * @Last Modified time: 2017-12-15 20:30:03
  *
  */
 
@@ -36,15 +36,8 @@ func main() {
 
 	//param := ini.GetParamByName("[SECTION1]", "angryByrds")
 
-	x := inigo.HEX
-	for _, con := range inigo.PREFFS {
-		if x == con {
-			fmt.Println(con)
-		}
-	}
-
 	fmt.Println("___")
-	value := ini.GetValue("[SECTION1]", "param6")
+	value := ini.GetValue("[SECTION1]", "param5")
 	fmt.Println(value)
 
 	/*

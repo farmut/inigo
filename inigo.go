@@ -204,7 +204,7 @@ func (i *Inifile) GetValue(secname, paramname string) interface{} {
 	//params := i.GetSectionParams(secname)
 	value := i.GetParamByName(secname, paramname)
 
-	parsed := parser.Parse(value)
+	parsed := parser.ParseValue(value)
 
 	return parsed
 }
