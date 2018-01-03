@@ -1,23 +1,23 @@
-/////////////////////////////////////////////////////
-// @Author: hIMEI
-// @Date:   2017-12-14 13:51:45
-// @Copyright © 2017 hIMEI <himei@tuta.io>
-// @license MIT
-/////////////////////////////////////////////////////
+// Copyright 2018 hIMEI
 //
-//    ██╗███╗   ██╗██╗ ██████╗  ██████╗
-//    ██║████╗  ██║██║██╔════╝ ██╔═══██╗
-//    ██║██╔██╗ ██║██║██║  ███╗██║   ██║
-//    ██║██║╚██╗██║██║██║   ██║██║   ██║
-//    ██║██║ ╚████║██║╚██████╔╝╚██████╔╝
-//    ╚═╝╚═╝  ╚═══╝╚═╝ ╚═════╝  ╚═════╝
-//    ___.ini files parser___
-/////////////////////////////////////////////////////
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//////////////////////////////////////////////////////////////////////////
 
 package inigo
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -92,9 +92,14 @@ func getSections(clearedIni []string) []string {
 
 	for _, str := range clearedIni {
 		if (string(str[0]) == LSQUARE) && (str[len(str)-1:] == RSQUARE) {
-			sectionNames = append(sectionNames, str)
+			sectionNames = append(sectionNames, clearSectionName(str))
+			//fmt.Println(clearSectionName(str))
 		}
 	}
+
+	//for _, ee := range sectionNames {
+	//	fmt.Println(ee)
+	//}
 
 	return sectionNames
 }
@@ -106,7 +111,7 @@ func splitParamString(paramString string) []string {
 	return splitted
 }
 
-// Join []string to string with "=" as delimiter
+// Joins []string to string with EQUAL
 func joinParamStrings(creds []string) string {
 	paramString := strings.Join(creds, EQUAL)
 
@@ -137,7 +142,7 @@ func checkDubls(paramnames []string, paramname string) bool {
 	return check
 }
 
-// If duplicated paramnames found, renames thats with incremented siffix.
+// If duplicated paramnames found, renames thats with incremented suffix.
 func renameDubls(paramnames []string) []string {
 	for i, name := range paramnames {
 		for j, checkedname := range paramnames {
@@ -167,7 +172,10 @@ func checkSpaceComma(stringvalue string) bool {
 	check := true
 
 	if strings.Contains(stringvalue, SPACE) == true &&
-		strings.Contains(stringvalue, CSPACE) == false {
+		strings.Contains(stringvalue, CSPACE) == false &&
+		// case of inline comments
+		strings.Contains(stringvalue, COMM) == false &&
+		strings.Contains(stringvalue, UCOMM) == false {
 		check = false
 	}
 
@@ -231,12 +239,15 @@ func paramsConstruct(body []string) *Params {
 
 // Constructor for Sections
 func sectionsConstruct(sectionsMap map[string][]string) *Sections {
-	sections := &Sections{}
-	sections.SectionsMap = make(map[string]*Params)
+	var sMap = make(map[string]*Params)
 
 	for key, value := range sectionsMap {
-		sections.SectionsMap[key] = paramsConstruct(value)
+		//fmt.Println(key)
+		fmt.Println(value)
+		sMap[key] = paramsConstruct(value)
 	}
+
+	sections := &Sections{sMap}
 
 	return sections
 }
@@ -253,7 +264,7 @@ func getSectionsBodys(clearedIni []string) map[string][]string {
 	for i, str := range clearedIni {
 		for j, name := range sectionNames {
 			if str == name {
-
+				fmt.Println(str, name, i, j)
 				// Index is always in range of slice
 				if j != (len(sectionNames) - 1) {
 					nextName := sectionNames[j+1]

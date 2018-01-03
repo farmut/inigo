@@ -1,18 +1,17 @@
-/////////////////////////////////////////////////////
-// @Author: hIMEI
-// @Date:   2017-12-06 07:15:25
-// @Copyright © 2017 hIMEI <himei@tuta.io>
-// @license MIT
-/////////////////////////////////////////////////////
+// Copyright 2018 hIMEI
 //
-//    ██╗███╗   ██╗██╗ ██████╗  ██████╗
-//    ██║████╗  ██║██║██╔════╝ ██╔═══██╗
-//    ██║██╔██╗ ██║██║██║  ███╗██║   ██║
-//    ██║██║╚██╗██║██║██║   ██║██║   ██║
-//    ██║██║ ╚████║██║╚██████╔╝╚██████╔╝
-//    ╚═╝╚═╝  ╚═══╝╚═╝ ╚═════╝  ╚═════╝
-//    ___.ini files parser___
-/////////////////////////////////////////////////////
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//////////////////////////////////////////////////////////////////////////
 
 package inigo
 
@@ -47,45 +46,20 @@ type Params struct {
 	Errors []string `json:"Errors"`
 }
 
-// Type for sections. Sections is a blocks of INI file with unic name and structure
-// Params as body.
+// Type for sections. Sections is a blocks of INI file with unic name and Params structure
+//  as body.
 type Sections struct {
 
 	// Map [section_name]parameter_block.
 	SectionsMap map[string]*Params `json:"sectionsmap"`
 }
 
-// Main data type. It is also API methods reciever. Contains Sections field.
+// Inifile is an main data type. It is also API methods reciever. Contains Sections field.
 type Inifile struct {
 
-	// Map [section_name]parameter_block.
+	// Sections
 	Sections *Sections `json:"sections"`
 }
-
-///////////////////////////////////////////////////////////////////////////////
-//
-//                           **Library's API is here:**
-//
-
-//
-// * Functions
-// 		- NewIniFile(filename string) *Inifile
-
-// * Methods
-// 		- IniToJson() ([]byte, error)
-// 		- GetSectionsNames() []string
-// 		- PrintSectionsNames()
-// 		- GetSectionParams(secname string) *Params
-// 		- GetParamByName(params *Params, paramname string) string
-// 		- GetParamsEnabled(secname string) []string
-// 		- PrintParamsEnabled(secname string)
-// 		- GetParamsDisabled(secname string) []string
-// 		- PrintParamsDisabled(secname string)
-// 		- GetAllParams() []string
-// 		- PrintAllParams()
-// 		- GetValue(secname, paramname string) interface{}
-//
-//
 
 // Parses ini file by given file name,
 // returns pointer to app main type - Inifile structure.
@@ -108,35 +82,33 @@ func (i *Inifile) IniToJson() ([]byte, error) {
 	return nosj, nil
 }
 
-// Gets Inifile's sections names. Returns []string.
+// GetSectionsNames gets Inifile's sections names. Returns []string.
 func (i *Inifile) GetSectionsNames() []string {
 	var secnames []string
 
 	for key := range i.Sections.SectionsMap {
 		secnames = append(secnames, key)
+		fmt.Println(key)
 	}
 
 	return secnames
 }
 
-// Prints section names.
-func (i *Inifile) PrintSectionsNames() {
-	secnames := i.GetSectionsNames()
-
-	for _, str := range secnames {
-		fmt.Println(str)
-	}
-}
-
 // Gets value by section name. Returns *Params
-func (i *Inifile) GetSectionParams(secname string) *Params {
+func (i *Inifile) getSectionParams(secname string) *Params {
 	return i.Sections.SectionsMap[secname]
 }
 
-// Gets stored string representation of enabled parameter's value by given parameter name.
-func (i *Inifile) GetParamByName(secname, paramname string) string {
-	params := i.GetSectionParams(secname)
+// Gets string representation of enabled parameter's value by given parameter name.
+func (i *Inifile) GetEnableByName(secname, paramname string) string {
+	params := i.getSectionParams(secname)
 	return params.Enabled[paramname]
+}
+
+// Gets string representation of disabled parameter's value by given parameter name.
+func (i *Inifile) GetDisableByName(secname, paramname string) string {
+	params := i.getSectionParams(secname)
+	return params.Disabled[paramname]
 }
 
 // Gets enabled parameters for given section.
@@ -150,15 +122,6 @@ func (i *Inifile) GetParamsEnabled(secname string) []string {
 	return enabled
 }
 
-// Prints enabled parameters for given section.
-func (i *Inifile) PrintParamsEnabled(secname string) {
-	paramsenabled := i.GetParamsEnabled(secname)
-
-	for _, str := range paramsenabled {
-		fmt.Println(str)
-	}
-}
-
 // Gets disabled parameters for given section.
 func (i *Inifile) GetParamsDisabled(secname string) []string {
 	var disabled []string
@@ -168,15 +131,6 @@ func (i *Inifile) GetParamsDisabled(secname string) []string {
 	}
 
 	return disabled
-}
-
-// Prints disabled parameters for given section.
-func (i *Inifile) PrintParamsDisabled(secname string) {
-	paramsdisabled := i.GetParamsEnabled(secname)
-
-	for _, str := range paramsdisabled {
-		fmt.Println(str)
-	}
 }
 
 // Gets parameters of all sections.
@@ -197,23 +151,29 @@ func (i *Inifile) GetAllParams() []string {
 	return params
 }
 
-// Parses parameter value. Method calls IniParser's constructor end then calls parser's Parse() method.
+func (i *Inifile) GetAllErrors() []string {
+	var errors []string
+	secnames := i.GetSectionsNames()
+
+	for _, val := range secnames {
+		params := i.getSectionParams(val)
+
+		for _, e := range params.Errors {
+			errors = append(errors, e)
+		}
+	}
+
+	return errors
+}
+
+// Parses parameter value. Method calls IniParser's constructor and then calls parser's Parse() method.
 // Trys to get underlying value of string value. In case of error return string with error message.
 func (i *Inifile) GetValue(secname, paramname string) interface{} {
 	parser := NewParser()
 	//params := i.GetSectionParams(secname)
-	value := i.GetParamByName(secname, paramname)
+	value := i.GetEnableByName(secname, paramname)
 
 	parsed := parser.ParseValue(value)
 
 	return parsed
-}
-
-// Prints parameters of all sections.
-func (i *Inifile) PrintAllParams() {
-	params := i.GetAllParams()
-
-	for _, str := range params {
-		fmt.Println(str)
-	}
 }

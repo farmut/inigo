@@ -1,18 +1,17 @@
-////////////////////////////////////////////////////
-// @Author: hIMEI
-// @Date:   2017-12-11 22:02:59
-// @Copyright © 2017 hIMEI <himei@tuta.io>
-// @license MIT
-/////////////////////////////////////////////////////
+// Copyright 2018 hIMEI
 //
-//    ██╗███╗   ██╗██╗ ██████╗  ██████╗
-//    ██║████╗  ██║██║██╔════╝ ██╔═══██╗
-//    ██║██╔██╗ ██║██║██║  ███╗██║   ██║
-//    ██║██║╚██╗██║██║██║   ██║██║   ██║
-//    ██║██║ ╚████║██║╚██████╔╝╚██████╔╝
-//    ╚═╝╚═╝  ╚═══╝╚═╝ ╚═════╝  ╚═════╝
-//    ___.ini files parser___
-/////////////////////////////////////////////////////
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//////////////////////////////////////////////////////////////////////////
 
 package inigo
 
@@ -28,19 +27,19 @@ const ENABLED Nbld = true
 // Just a Enabled
 type Nbld bool
 
-// Non-instantiated type for value-parsing logic separation.
+// Checker is a type for value-parsing logic separation only.
 type Checker struct {
 
 	// Boolean const
 	ENABLED Nbld
 }
 
-// Type representing value-parsing logic. In default case, Inigo stores parameter's
-// value as string. For recognize it true type and parse it true
+// IniParser represents value-parsing logic. In default case, Inigo stores parameter's
+// value as string. For recognize it true type and parse true
 // value IniParser's methods used.
 type IniParser struct {
 
-	// Embedded type Checker gives the methods for pre-parsing value check.
+	// Checker embedded type gives the methods for pre-parsing value check.
 	Checker
 
 	// Parse functions selector
@@ -64,14 +63,14 @@ func ErrCheck(value string) string {
 	return errorString
 }
 
-// Common error handling
+// ErrFatal common error handling
 func ErrFatal(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-// IniParser's constructor
+// NewParser IniParser's constructor
 func NewParser() *IniParser {
 	parser := &IniParser{}
 	parser.Functions = make(map[int]func(string) interface{})
@@ -114,28 +113,33 @@ func NewParser() *IniParser {
 		parsed := value
 		return parsed
 	}
-	/*
-		// Parses slice of strings
-		parser.Functions[7] = func(value string) interface{} {
-			parsed := strings.Split(value, COMMA)
 
-			return parsed
-		}
+	// Parses slice of strings
+	parser.Functions[6] = func(value string) interface{} {
+		parsed := strings.Split(value, COMMA)
 
-		// Parses map[strings]strings
-		parser.Functions[8] = func(value string) interface{} {
-			parsed := make(map[string]string)
-
-			bufslice := strings.Split(value, COMMA)
-
-			for _, str := range bufslice {
-				splitted := strings.Split(str, COLON)
-				check[splitted[0]] = splitted[1]
+		for _, p := range parsed {
+			if string(p[0]) == SPACE {
+				p = strings.TrimPrefix(p, SPACE)
 			}
-
-			return parsed
 		}
-	*/
+
+		return parsed
+	}
+
+	// Parses map[strings]strings
+	parser.Functions[7] = func(value string) interface{} {
+		parsed := make(map[string]string)
+
+		bufslice := strings.Split(value, COMMA)
+
+		for _, str := range bufslice {
+			splitted := strings.Split(str, COLON)
+			parsed[splitted[0]] = splitted[1]
+		}
+
+		return parsed
+	}
 
 	return parser
 }
@@ -146,7 +150,6 @@ func NewParser() *IniParser {
 
 // Parser main
 func (p *IniParser) ParseValue(value string) interface{} {
-	//var parsed interface{}
 
 	function := p.funcSelect(p.typeChecker(value))
 
@@ -157,7 +160,7 @@ func (p *IniParser) ParseValue(value string) interface{} {
 
 func (p *IniParser) funcSelect(num int) func(string) interface{} {
 	var function func(value string) interface{}
-	if num < len(p.Functions) {
+	if num < len(p.Functions) { // ???????????????????????????????????????????????
 		function = p.Functions[num]
 	}
 
@@ -181,6 +184,12 @@ func (p *IniParser) typeChecker(value string) int {
 
 	case p.Hexs(value) == true:
 		counted = 4
+
+	case p.Comma(value) == true:
+		counted = 6
+
+	case p.Mapped(value) == true:
+		counted = 7
 
 	default:
 		counted = 5
@@ -257,6 +266,32 @@ func (c Checker) Minus(value string) bool {
 	return check
 }
 
-//                                                              |⛀ ⛂ ⛀|
-// TODO: Logical and boolean expressions parse, default string  |⛀ ⛀ ⛂|
-//                                                              |⛂ ⛂ ⛂|
+func (c Checker) Comma(value string) bool {
+	var check bool
+
+	if strings.Contains(value, COMMA) == true {
+		check = true
+	}
+
+	return check
+}
+
+func (c Checker) Mapped(value string) bool {
+	var check bool
+
+	if strings.Contains(value, COMMA) == true {
+		splitted := strings.Split(value, COMMA)
+
+		for _, s := range splitted {
+			if strings.Contains(s, COLON) == true {
+				check = true
+			}
+		}
+	}
+
+	return check
+}
+
+//  |⛀ ⛂ ⛀|
+//  |⛀ ⛀ ⛂|
+//  |⛂ ⛂ ⛂|

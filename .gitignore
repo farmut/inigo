@@ -51,10 +51,12 @@ sftp-config.json
 ###Ini & others###
 
 # *.ini
-/notes/*
-inigo
-change.log
 
 ###Build objects###
 
 build.sh
+/notes/*
+inigo
+change.log
+README.e.md
+.version.sh
