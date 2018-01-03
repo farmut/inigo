@@ -1,54 +1,66 @@
-/*
- * example.go
- *
- * @Author: hIMEI
- * @Date:   2017-12-13 17:49:49
- * @Last Modified by:   hIMEI
- * @Last Modified time: 2017-12-16 12:11:12
- *
- */
+// Copyright 2018 hIMEI
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//////////////////////////////////////////////////////////////////////////
 
 package main
 
 import (
 	"fmt"
 
-	inigo "bitbucket.org/hIMEI/inigo"
+	inigo "github.com/hIMEI29A/inigo"
 )
 
 func main() {
-	//filename := "example.ini"
-	filename := "short.ini"
+	filename := "example.ini"
+	//filename := "short.ini"
 	//filename := "example_php.ini"
 
 	ini := inigo.NewIniFile(filename)
 
-	ini.PrintSectionsNames()
-	fmt.Println("___")
+	sections := ini.GetSectionsNames()
 
-	//  params := ini.GetAllParams()
-	ini.PrintAllParams()
+	fmt.Println("Sections:")
 
-	fmt.Println("___")
+	for _, sec := range sections {
+		fmt.Println(sec)
 
-	ini.PrintSectionsNames()
-	fmt.Println("___")
+		/*		e := ini.GetParamsEnabled(sec)
 
-	//param := ini.GetParamByName("[SECTION1]", "angryByrds")
+				fmt.Println("Enabled params:")
 
-	fmt.Println("___")
-	value := ini.GetValue("[SECTION1]", "param7")
-	fmt.Println(value)
+				for _, p := range e {
+					fmt.Println(p)
+					fmt.Println("Value:")
+					value := ini.GetValue(sec, p)
+					fmt.Println(value)
+				}
 
+				d := ini.GetParamsDisabled(sec)
+
+				fmt.Println("Disabled params:")
+
+				for _, p := range d {
+					fmt.Println(p)
+				}*/
+	}
 	/*
-		for _, str := range sections {
-			enParams := ini.GetParamsEnabled(str)
+		all := ini.GetAllParams()
 
-			for _, param := range enParams {
-				value := ini.GetValue(str, param)
-				fmt.Println(value)
-			}
-		}
-	*/
+		fmt.Println("All Params:")
+
+		for _, a := range all {
+			fmt.Println(a)
+		}*/
 
 }
