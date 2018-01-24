@@ -13,6 +13,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////
 
+/* File iniparser.go contains types and methods for parameters values parsing */
+
 package inigo
 
 import (
@@ -27,19 +29,19 @@ const ENABLED Nbld = true
 // Just a Enabled
 type Nbld bool
 
-// Checker is a type for value-parsing logic separation only.
+// Non-instantiated type for value-parsing logic separation.
 type Checker struct {
 
 	// Boolean const
 	ENABLED Nbld
 }
 
-// IniParser represents value-parsing logic. In default case, Inigo stores parameter's
-// value as string. For recognize it true type and parse true
+// Type representing value-parsing logic. In default case, Inigo stores parameter's
+// value as string. For recognize it true type and parse it true
 // value IniParser's methods used.
 type IniParser struct {
 
-	// Checker embedded type gives the methods for pre-parsing value check.
+	// Embedded type Checker gives the methods for pre-parsing value check.
 	Checker
 
 	// Parse functions selector
@@ -63,14 +65,14 @@ func ErrCheck(value string) string {
 	return errorString
 }
 
-// ErrFatal common error handling
+// ErrFatal is a common error handling
 func ErrFatal(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-// NewParser IniParser's constructor
+// IniParser's constructor
 func NewParser() *IniParser {
 	parser := &IniParser{}
 	parser.Functions = make(map[int]func(string) interface{})
@@ -150,6 +152,7 @@ func NewParser() *IniParser {
 
 // Parser main
 func (p *IniParser) ParseValue(value string) interface{} {
+	//var parsed interface{}
 
 	function := p.funcSelect(p.typeChecker(value))
 
@@ -160,7 +163,7 @@ func (p *IniParser) ParseValue(value string) interface{} {
 
 func (p *IniParser) funcSelect(num int) func(string) interface{} {
 	var function func(value string) interface{}
-	if num < len(p.Functions) { // ???????????????????????????????????????????????
+	if num < len(p.Functions) {
 		function = p.Functions[num]
 	}
 
