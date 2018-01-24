@@ -14,10 +14,12 @@
 //////////////////////////////////////////////////////////////////////////
 
 /*
+Package inigo is an INI files parsing library for Golang applications. It use wide range of recognised
+options trying to enhance common INI syntax.
 
-Short info about INI files from Wikipedia (https://en.wikipedia.org/wiki/INI_file).
+Short info about INI files from Wikipedia (https://en.wikipedia.org/wiki/INI_file):
 
-The INI files format is an informal standard for configuration files for some platforms or software.
+"The INI files format is an informal standard for configuration files for some platforms or software.
 INI files are simple text files with a basic structure composed of sections, properties, and values.
 The name "INI file" comes from the commonly used filename extension .INI, which stands for
 _"initialization"_.
@@ -35,9 +37,9 @@ Linux and Unix systems also use a similar file format for system configuration. 
 platform-agnostic software may use this file format for configuration. It is human-readable and simple
 to parse, so it is a usable format for configuration files that do not require much greater complexity.
 For example, the platform-agnostic PHP uses the "INI" format for its php.ini configuration file in
-both Windows and Linux systems.
+both Windows and Linux systems".
 
-## Ini file format
+Ini file format
 
 Inigo use next conception and rules of INI syntax:
 
@@ -59,9 +61,9 @@ Inigo use next conception and rules of INI syntax:
 
             ...
 
-2. Section
+2. Sections
 
-Keys may (but need not) be grouped into arbitrarily named sections. The section name appears on a
+Keys MAY BE grouped into arbitrarily named sections. The section name appears on a
 line by itself, in square brackets "[" and "]". All keys after the section declaration are associated
 with that section. There is no explicit "end of section" delimiter so sections end at the next
 section declaration, or the end of the file. Sections may not be nested.
@@ -74,7 +76,18 @@ Note: In the Windows implementation the section cannot contain the character clo
 
 3. Parameters
 
-Parameter names parses as string always. Parameter name may contains any symbols except _space_.
+In common cases parameter names parses as string always. But Inigo breaks this rule and parse
+underlying value of parameter. So parsed value may be:
+
+- Int
+- Uint
+- Int in hexademical, octal or binary representation
+- Boolean
+- String (default)
+- Array (e.g Golang slice) of strings
+- Map [string]string
+
+Parameter name may contains any symbols except space.
 
     parameter1="Iggy Pop"
     new parameter=20.6465 // Error
@@ -82,26 +95,29 @@ Parameter names parses as string always. Parameter name may contains any symbols
 Note: In the Windows implementation the key cannot contain the characters equal sign "=" or semicolon
  ";" as these are reserved characters. The _value_ can contain any character.
 
-#### Case insensitivity
+Case insensitivity
 
 Section and key _names_ are not case sensitive in the Windows implementation.
 
-#### Comments
+Comments
 
 _Semicolons_ ";" at the beginning of the line indicate a comment. Comment lines are ignored.
 
-    ; comment text
+    ; commented string
+    # Unix-style commented string
 
-#### Varying features
+4. Varying features
 
-The INI files format is not well defined. Many programs support features beyond the basics described above. The following is a list of some common features, which may or may not be implemented in any given program.
+The INI files format is not well defined. Many programs support features beyond the basics described
+above. The following is a list of some common features, which may or may not be implemented in any
+given program.
 
-##### Blank lines
+Blank lines
 
 Some rudimentary programs do not allow blank lines. Every line must therefore be a section head, a
 parameter, or a comment. Inigo ignores blank lines founded.
 
-##### Unix-style comments
+Unix-style comments
 
 Some software supports the use of the _number sign_ "#" as an alternative to the _semicolon_ for indicating
 comments. Practically speaking, using it to begin a line may effectively change a variable name on that
@@ -120,7 +136,7 @@ Unlike this, Inigo parses Unix-style comment as ordinary comment with ";".
     # var=a
     # Unix-style comment
 
-##### Duplicate names
+Duplicate names
 
 Most implementations only support having one parameter with a given name in a section. The second
 occurrence of a parameter _name_ may cause an abort, it may be ignored (and the _value_ discarded), or
@@ -131,7 +147,7 @@ Interpretation of multiple section declarations with the same name also varies. 
 duplicate sections simply merge their _properties_ together, as if they occurred contiguously. Others may
 abort, or ignore some aspect of the INI files.
 
-##### Arrays
+Arrays
 
 Russian version https://ru.wikipedia.org/wiki/.ini of Wikipedia article shows an examples of
 working with arrays in INI files as Zend Framework do:
@@ -143,12 +159,11 @@ working with arrays in INI files as Zend Framework do:
     var1[]=значение_1_3
     var2=значение_2
 
-But Inigo don't recognize (_yet_) such syntax.
+But Inigo don't recognize such syntax.
 
-#### Examples of INI files
+Examples of INI files
 
-See examples of INI files in "example" folder of app's repo.
-One file, "example/example.ini", is the simple INI files for illustration of base "INI" features:
+See examples of INI files in "example" folder.
 
     ;;;;;;;;;;;;;;;;;;;;;
     ;; ex.ini file begin
@@ -216,5 +231,4 @@ One file, "example/example.ini", is the simple INI files for illustration of bas
     ; this is the end
 
 */
-
 package inigo
