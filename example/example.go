@@ -28,39 +28,37 @@ func main() {
 
 	ini := inigo.NewIniFile(filename)
 
-	sections := ini.GetSectionsNames()
-
-	fmt.Println("Sections:")
-
-	for _, sec := range sections {
+	secs := ini.GetSectionsNames()
+	for _, sec := range secs {
 		fmt.Println(sec)
-
-		/*		e := ini.GetParamsEnabled(sec)
-
-				fmt.Println("Enabled params:")
-
-				for _, p := range e {
-					fmt.Println(p)
-					fmt.Println("Value:")
-					value := ini.GetValue(sec, p)
-					fmt.Println(value)
-				}
-
-				d := ini.GetParamsDisabled(sec)
-
-				fmt.Println("Disabled params:")
-
-				for _, p := range d {
-					fmt.Println(p)
-				}*/
 	}
-	/*
-		all := ini.GetAllParams()
 
-		fmt.Println("All Params:")
+	fmt.Println("___")
 
-		for _, a := range all {
-			fmt.Println(a)
-		}*/
+	params := ini.GetAllParams()
+	for _, param := range params {
+		fmt.Println(param)
+	}
+
+	fmt.Println("___")
+
+	//param := ini.GetParamByName("[SECTION1]", "angryByrds")
+
+	fmt.Println("___")
+	//value := ini.GetValue("SECTION1", "param8")
+	//fmt.Println(value)
+
+	fmt.Println("___")
+
+	sec, val := ini.FindParam("param2123")
+
+	fmt.Println(sec, val)
+
+	fmt.Println("==========")
+
+	errors := ini.GetErrors()
+	for _, d := range errors {
+		fmt.Println(d)
+	}
 
 }
