@@ -13,6 +13,8 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////
 
+/* File globs.go contains constants and global variables */
+
 package inigo
 
 // Constants for numbers parsing options
