@@ -13,21 +13,18 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////
 
+/* File utils.go contains unexported functions and local helpers */
+
 package inigo
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
 )
 
-//////////////////////////////////////
-// Private functions and local helpers
-//////////////////////////////////////
-
-// Reads contains of ini file, returns slice of strings
+// newFromFile reads contains of ini file, returns slice of strings
 func newFromFile(filename string) []string {
 	var newIni []string
 	file, _ := os.Open(filename)
@@ -45,7 +42,7 @@ func newFromFile(filename string) []string {
 	return newIni
 }
 
-// Removes string from slice by given parameter. Empty string, for example.
+// removeString removes string from slice by given parameter. Empty string, for example.
 func removeString(newIni []string, junk string) []string {
 	for i, str := range newIni {
 		if str == junk {
@@ -56,7 +53,7 @@ func removeString(newIni []string, junk string) []string {
 	return newIni
 }
 
-// Finds given string's index in slice
+// findIndexByName finds given string's index in slice
 func findIndexByName(names []string, name string) int {
 	var index int
 	for i, str := range names {
@@ -68,7 +65,7 @@ func findIndexByName(names []string, name string) int {
 	return index
 }
 
-// Parses given parameter name, returns false in case of syntax errors.
+// parseParamName parses given parameter name, returns false in case of syntax errors.
 // If syntax is correct, returns true
 func parseParamName(paramname string) bool {
 	check := true
@@ -86,39 +83,34 @@ func parseParamName(paramname string) bool {
 	return check
 }
 
-// Gets sections names, e.g, [Name]
+// getSections gets sections names, e.g, [Name]
 func getSections(clearedIni []string) []string {
 	var sectionNames []string
 
 	for _, str := range clearedIni {
 		if (string(str[0]) == LSQUARE) && (str[len(str)-1:] == RSQUARE) {
-			sectionNames = append(sectionNames, clearSectionName(str))
-			//fmt.Println(clearSectionName(str))
+			sectionNames = append(sectionNames, str)
 		}
 	}
-
-	//for _, ee := range sectionNames {
-	//	fmt.Println(ee)
-	//}
 
 	return sectionNames
 }
 
-// Splits given paramString with EQUAL
+// splitParamString splits given paramString with EQUAL
 func splitParamString(paramString string) []string {
 	splitted := strings.Split(paramString, EQUAL)
 
 	return splitted
 }
 
-// Joins []string to string with EQUAL
+// Join []string to string with "=" as delimiter
 func joinParamStrings(creds []string) string {
 	paramString := strings.Join(creds, EQUAL)
 
 	return paramString
 }
 
-// If paramname contained trailing space, removes it. Returns trimmed paramname.
+// removeLastSpace if paramname contained trailing space, removes it. Returns trimmed paramname.
 func removeLastSpace(paramname string) string {
 	if strings.Contains(paramname, SPACE) == true &&
 		strings.Index(paramname, SPACE) == (len(paramname)-1) {
@@ -128,7 +120,7 @@ func removeLastSpace(paramname string) string {
 	return paramname
 }
 
-// Checks for duplicated paramnames.
+// checkDubls checks for duplicated paramnames.
 func checkDubls(paramnames []string, paramname string) bool {
 	check := false
 
@@ -142,7 +134,7 @@ func checkDubls(paramnames []string, paramname string) bool {
 	return check
 }
 
-// If duplicated paramnames found, renames thats with incremented suffix.
+// renameDubls if duplicated paramnames found, renames thats with incremented siffix.
 func renameDubls(paramnames []string) []string {
 	for i, name := range paramnames {
 		for j, checkedname := range paramnames {
@@ -156,7 +148,7 @@ func renameDubls(paramnames []string) []string {
 	return paramnames
 }
 
-// Checks parameter name for EQUAL
+// checkForEqual checks parameter name for EQUAL
 func checkForEqual(paramstring string) bool {
 	check := false
 	if strings.Contains(paramstring, EQUAL) == true {
@@ -166,23 +158,20 @@ func checkForEqual(paramstring string) bool {
 	return check
 }
 
-// Checks parameter string value for SPACE and COMMA. If string contains SPACE and if SPACE
+// checkSpaceComma checks parameter string value for SPACE and COMMA. If string contains SPACE and if SPACE
 // not follows the COMMA (e.g, syntax error), returns false
 func checkSpaceComma(stringvalue string) bool {
 	check := true
 
 	if strings.Contains(stringvalue, SPACE) == true &&
-		strings.Contains(stringvalue, CSPACE) == false &&
-		// case of inline comments
-		strings.Contains(stringvalue, COMM) == false &&
-		strings.Contains(stringvalue, UCOMM) == false {
+		strings.Contains(stringvalue, CSPACE) == false {
 		check = false
 	}
 
 	return check
 }
 
-// Constructor for Params.Error
+// errorConstruct constructor for Params.Error
 func errorConstruct(body []string) []string {
 	var errors []string
 
@@ -200,7 +189,7 @@ func errorConstruct(body []string) []string {
 	return errors
 }
 
-// Constructor for Params
+// paramsConstruct constructor for Params
 func paramsConstruct(body []string) *Params {
 	params := &Params{}
 
@@ -227,32 +216,24 @@ func paramsConstruct(body []string) *Params {
 				}
 			}
 		}
-
-		if (checkForEqual(str) != true) &&
-			((string(str[0]) == COMM) || (string(str[0]) == UCOMM)) {
-			params.Comments.Comms = append(params.Comments.Comms, str)
-		}
 	}
 
 	return params
 }
 
-// Constructor for Sections
+// sectionsConstruct constructor for Sections
 func sectionsConstruct(sectionsMap map[string][]string) *Sections {
-	var sMap = make(map[string]*Params)
+	sections := &Sections{}
+	sections.SectionsMap = make(map[string]*Params)
 
 	for key, value := range sectionsMap {
-		//fmt.Println(key)
-		fmt.Println(value)
-		sMap[key] = paramsConstruct(value)
+		sections.SectionsMap[clearSectionName(key)] = paramsConstruct(value)
 	}
-
-	sections := &Sections{sMap}
 
 	return sections
 }
 
-// Gets unparsed []string as body of each Section
+// getSectionsBodys gets unparsed []string as body of each Section
 func getSectionsBodys(clearedIni []string) map[string][]string {
 	sectionsMap := make(map[string][]string)
 	sectionNames := getSections(clearedIni)
@@ -264,7 +245,7 @@ func getSectionsBodys(clearedIni []string) map[string][]string {
 	for i, str := range clearedIni {
 		for j, name := range sectionNames {
 			if str == name {
-				fmt.Println(str, name, i, j)
+
 				// Index is always in range of slice
 				if j != (len(sectionNames) - 1) {
 					nextName := sectionNames[j+1]
@@ -283,7 +264,7 @@ func getSectionsBodys(clearedIni []string) map[string][]string {
 	return sectionsMap
 }
 
-// Removes "[" and "]" from section name
+// clearSectionName removes "[" and "]" from section name
 func clearSectionName(sectionName string) string {
 	sectionName = strings.TrimPrefix(sectionName, LSQUARE)
 	sectionName = strings.TrimSuffix(sectionName, RSQUARE)
