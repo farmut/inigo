@@ -45,8 +45,8 @@ func main() {
 	//param := ini.GetParamByName("[SECTION1]", "angryByrds")
 
 	fmt.Println("___")
-	//value := ini.GetValue("SECTION1", "param8")
-	//fmt.Println(value)
+	value := ini.GetValue("insects", "ColonyPopulation")
+	fmt.Println(value)
 
 	fmt.Println("___")
 
