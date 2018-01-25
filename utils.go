@@ -70,14 +70,16 @@ func findIndexByName(names []string, name string) int {
 func parseParamName(paramname string) bool {
 	check := true
 
-	if strings.Contains(paramname, SPACE) == true &&
-		strings.Index(paramname, SPACE) != (len(paramname)-1) {
-		check = false
-	} else if (strings.Contains(paramname, COMM) == true && strings.Index(paramname, COMM) != 0) ||
-		(strings.Contains(paramname, UCOMM) == true && strings.Index(paramname, COMM) != 0) {
-		check = false
-	} else {
-		check = true
+	if string(paramname[0]) != COMM && string(paramname[0]) != UCOMM {
+		if strings.Contains(paramname, SPACE) == true &&
+			strings.Index(paramname, SPACE) != (len(paramname)-1) {
+			check = false
+		} else if (strings.Contains(paramname, COMM) == true && strings.Index(paramname, COMM) != 0) ||
+			(strings.Contains(paramname, UCOMM) == true && strings.Index(paramname, COMM) != 0) {
+			check = false
+		} else {
+			check = true
+		}
 	}
 
 	return check
@@ -110,7 +112,7 @@ func joinParamStrings(creds []string) string {
 	return paramString
 }
 
-// removeLastSpace if paramname contained trailing space, removes it. Returns trimmed paramname.
+// removeLastSpace removes trailing space from parameter's name. Returns trimmed paramname.
 func removeLastSpace(paramname string) string {
 	if strings.Contains(paramname, SPACE) == true &&
 		strings.Index(paramname, SPACE) == (len(paramname)-1) {
@@ -118,6 +120,36 @@ func removeLastSpace(paramname string) string {
 	}
 
 	return paramname
+}
+
+// removeInline removes inline comments form parameter's string value
+func removeInline(stringvalue string) string {
+	var newValue string
+
+	switch {
+	case strings.Contains(stringvalue, COMM) == true:
+		splitted := strings.Split(stringvalue, COMM)
+		newValue = splitted[0]
+
+	case strings.Contains(stringvalue, UCOMM) == true:
+		splitted := strings.Split(stringvalue, UCOMM)
+		newValue = splitted[0]
+
+	default:
+		newValue = stringvalue
+	}
+
+	return newValue
+}
+
+// removeFirstSpace removes leading space from parameter's string value.
+// Returns trimmed value.
+func removeFirstSpace(stringvalue string) string {
+	if string(stringvalue[0]) == SPACE {
+		stringvalue = strings.TrimPrefix(stringvalue, SPACE)
+	}
+
+	return stringvalue
 }
 
 // checkDubls checks for duplicated paramnames.
@@ -158,7 +190,8 @@ func checkForEqual(paramstring string) bool {
 	return check
 }
 
-// checkSpaceComma checks parameter string value for SPACE and COMMA. If string contains SPACE and if SPACE
+// checkSpaceComma checks parameter's string value for SPACE and COMMA.
+// If string contains SPACE and if SPACE
 // not follows the COMMA (e.g, syntax error), returns false
 func checkSpaceComma(stringvalue string) bool {
 	check := true
@@ -171,6 +204,26 @@ func checkSpaceComma(stringvalue string) bool {
 	return check
 }
 
+// checkErrors is a syntax error's checker for parameter's string value
+func checkErrors(stringvalue string) bool {
+	check := false
+
+	if stringvalue[0] != DQUOTE && stringvalue[len(stringvalue)-1] != DQUOTE {
+		if checkSpaceComma(stringvalue) == false {
+			check = true
+		}
+	}
+
+	return check
+}
+
+// prepareValue cuts trailing and leading spaces and inline comments if found
+func prepareValue(stringvalue string) string {
+	stringvalue = removeLastSpace(removeFirstSpace(removeInline(stringvalue)))
+
+	return stringvalue
+}
+
 // errorConstruct constructor for Params.Error
 func errorConstruct(body []string) []string {
 	var errors []string
@@ -178,9 +231,10 @@ func errorConstruct(body []string) []string {
 	for _, param := range body {
 		if checkForEqual(param) == true {
 			splitted := splitParamString(param)
+			value := prepareValue(splitted[1])
 
 			if parseParamName(splitted[0]) == false ||
-				checkSpaceComma(splitted[1]) == false {
+				checkErrors(value) == true {
 				errors = append(errors, param)
 			}
 		}
@@ -199,18 +253,20 @@ func paramsConstruct(body []string) *Params {
 
 	for _, str := range body {
 		if checkForEqual(str) == true {
-			if (string(str[0]) != COMM) || (string(str[0]) != UCOMM) {
+			if (string(str[0]) != COMM) && (string(str[0]) != UCOMM) {
 				splitted := splitParamString(str)
-				if splitted[1] != EMPTY {
-					params.Enabled[splitted[0]] = splitted[1]
+				value := prepareValue(splitted[1])
+				if splitted[1] != EMPTY && checkErrors(value) != true {
+					params.Enabled[splitted[0]] = value
 				} else {
-					params.Enabled[splitted[0]] = NONE
+					//params.Enabled[splitted[0]] = NONE
 				}
 
 			} else {
 				splitted := splitParamString(str)
-				if splitted[1] != EMPTY {
-					params.Disabled[splitted[0]] = splitted[1]
+				value := removeInline(removeFirstSpace(splitted[1]))
+				if splitted[1] != EMPTY && checkErrors(value) != true {
+					params.Disabled[splitted[0]] = value
 				} else {
 					params.Disabled[splitted[0]] = NONE
 				}

@@ -13,7 +13,7 @@
 // limitations under the License.
 //////////////////////////////////////////////////////////////////////////
 
-/* File inigo.go contains package API methods */
+/* File inigo.go contains package's API methods */
 
 package inigo
 
