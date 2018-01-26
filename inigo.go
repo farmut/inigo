@@ -17,13 +17,8 @@
 
 package inigo
 
-import (
-//"fmt"
-)
-
-// Params is a parameters containing strings in INI file. Here's different fields
-// for enabled and disabled (commented) params and field to store
-// strings with syntax errors.
+// Params is a parameters strings. Here's different fields
+// for enabled and disabled (commented) params and field to store syntax errors.
 type Params struct {
 
 	// Enabled is a not commented parameters
@@ -52,7 +47,7 @@ type Inifile struct {
 }
 
 // NewIniFile parses ini file by given file name,
-// returns pointer to app main type - Inifile structure.
+// returns pointer to Inifile structure.
 func NewIniFile(filename string) *Inifile {
 	inifile := &Inifile{}
 
@@ -63,6 +58,11 @@ func NewIniFile(filename string) *Inifile {
 
 	return inifile
 
+}
+
+// getSectionParams returns *Params of given section
+func (i *Inifile) getSectionParams(secname string) *Params {
+	return i.Sections.SectionsMap[secname]
 }
 
 // GetSectionsNames gets Inifile's sections names. Returns []string.
@@ -76,60 +76,63 @@ func (i *Inifile) GetSectionsNames() []string {
 	return secnames
 }
 
-// GetSectionParams gets value by section name. Returns *Params
-func (i *Inifile) GetSectionParams(secname string) *Params {
-	return i.Sections.SectionsMap[secname]
-}
-
-// GetParamByName gets stored string representation of enabled parameter's by given parameter name.
-func (i *Inifile) GetParamByName(secname, paramname string) string {
-	params := i.GetSectionParams(secname)
+// GetParamString gets stored string representation of enabled parameter's by given parameter name.
+func (i *Inifile) GetParamString(secname, paramname string) string {
+	params := i.getSectionParams(secname)
 	return params.Enabled[paramname]
 }
 
-// GetParamsEnabled gets enabled parameters of given section.
+// GetParamsEnabled gets enabled parameters of given section in form "paramName=paramValue"
 func (i *Inifile) GetParamsEnabled(secname string) []string {
 	var enabled []string
 
-	for _, str := range i.Sections.SectionsMap[secname].Enabled {
-		enabled = append(enabled, str)
+	for key, val := range i.Sections.SectionsMap[secname].Enabled {
+		paramStr := key + "=" + val
+		enabled = append(enabled, paramStr)
 	}
 
 	return enabled
 }
 
-// GetParamsDisabled gets disabled parameters of given section.
+// GetParamsDisabled gets disabled parameters of given section in form "paramName=paramValue"
 func (i *Inifile) GetParamsDisabled(secname string) []string {
 	var disabled []string
 
-	for _, str := range i.Sections.SectionsMap[secname].Disabled {
-		disabled = append(disabled, str)
+	for key, val := range i.Sections.SectionsMap[secname].Disabled {
+		paramStr := key + "=" + val
+		disabled = append(disabled, paramStr)
 	}
 
 	return disabled
 }
 
-// GetAllParams gets all enabled parameters of all sections.
+// GetAllParams gets all parameter's stirngs of all sections in form "paramName=paramValue"
 func (i *Inifile) GetAllParams() []string {
 	var params []string
 	secnames := i.GetSectionsNames()
 
 	for _, val := range secnames {
-		for _, ename := range i.Sections.SectionsMap[val].Enabled {
-			params = append(params, ename)
+		for ename, eval := range i.Sections.SectionsMap[val].Enabled {
+			paramStr := ename + "=" + eval
+			params = append(params, paramStr)
+		}
+
+		for ename, eval := range i.Sections.SectionsMap[val].Disabled {
+			paramStr := ename + "=" + eval
+			params = append(params, paramStr)
 		}
 	}
 
 	return params
 }
 
-// GetValue parses parameter value. Method calls IniParser's constructor and then calls parser's
+// GetParamValue parses parameter value. Method calls IniParser's constructor and then calls parser's
 // ParseValue() method. Trys to get underlying value of string. In case of error
 // returns string with error message.
-func (i *Inifile) GetValue(secname, paramname string) interface{} {
+func (i *Inifile) GetParamValue(secname, paramname string) interface{} {
 	parser := NewParser()
-	//params := i.GetSectionParams(secname)
-	value := i.GetParamByName(secname, paramname)
+	//params := i.getSectionParams(secname)
+	value := i.GetParamString(secname, paramname)
 
 	parsed := parser.ParseValue(value)
 
@@ -146,7 +149,7 @@ func (i *Inifile) FindParam(paramname string) (string, interface{}) {
 		for ename := range i.Sections.SectionsMap[val].Enabled {
 			if ename == paramname {
 				secname = val
-				value = i.GetValue(val, paramname)
+				value = i.GetParamValue(val, paramname)
 				break
 			}
 		}
@@ -155,7 +158,7 @@ func (i *Inifile) FindParam(paramname string) (string, interface{}) {
 	return secname, value
 }
 
-// GetErrors gets all collected errors of file
+// GetErrors gets all syntax errors of file
 func (i *Inifile) GetErrors() []string {
 	var errors []string
 	secnames := i.GetSectionsNames()

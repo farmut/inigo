@@ -83,6 +83,7 @@ underlying value of parameter. So parsed value may be:
 - Uint
 - Int in hexademical, octal or binary representation
 - Boolean
+- Floats
 - String (default)
 - Array (e.g Golang slice) of strings
 - Map [string]string

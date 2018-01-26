@@ -227,11 +227,14 @@ func prepareValue(stringvalue string) string {
 // errorConstruct constructor for Params.Error
 func errorConstruct(body []string) []string {
 	var errors []string
+	var value string
 
 	for _, param := range body {
 		if checkForEqual(param) == true {
 			splitted := splitParamString(param)
-			value := prepareValue(splitted[1])
+			if splitted[1] != EMPTY {
+				value = prepareValue(splitted[1])
+			}
 
 			if parseParamName(splitted[0]) == false ||
 				checkErrors(value) == true {
@@ -255,20 +258,29 @@ func paramsConstruct(body []string) *Params {
 		if checkForEqual(str) == true {
 			if (string(str[0]) != COMM) && (string(str[0]) != UCOMM) {
 				splitted := splitParamString(str)
-				value := prepareValue(splitted[1])
-				if splitted[1] != EMPTY && checkErrors(value) != true {
-					params.Enabled[splitted[0]] = value
+				if splitted[1] == EMPTY {
+					params.Enabled[splitted[0]] = NONE
 				} else {
-					//params.Enabled[splitted[0]] = NONE
+					// Non empty params
+					value := prepareValue(splitted[1])
+
+					if checkErrors(value) != true {
+						params.Enabled[splitted[0]] = value
+					}
 				}
 
 			} else {
+				// Commented params
 				splitted := splitParamString(str)
-				value := removeInline(removeFirstSpace(splitted[1]))
-				if splitted[1] != EMPTY && checkErrors(value) != true {
-					params.Disabled[splitted[0]] = value
-				} else {
+				if splitted[1] == EMPTY {
 					params.Disabled[splitted[0]] = NONE
+				} else {
+					// Non emty params
+					value := prepareValue(splitted[1])
+
+					if checkErrors(value) != true {
+						params.Disabled[splitted[0]] = value
+					}
 				}
 			}
 		}

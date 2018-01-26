@@ -28,26 +28,51 @@ func main() {
 
 	ini := inigo.NewIniFile(filename)
 
+	fmt.Println("==========")
+	fmt.Println("Sections")
+	fmt.Println("==========")
+
 	secs := ini.GetSectionsNames()
 	for _, sec := range secs {
 		fmt.Println(sec)
 	}
-
-	fmt.Println("___")
+	fmt.Println("==========")
+	fmt.Println("All params")
+	fmt.Println("==========")
 
 	params := ini.GetAllParams()
 	for _, param := range params {
 		fmt.Println(param)
 	}
 
-	fmt.Println("___")
+	fmt.Println("==========")
+	fmt.Println("Disabled params")
+	fmt.Println("==========")
+
+	for _, sec := range secs {
+		disparam := ini.GetParamsDisabled(sec)
+		for _, dis := range disparam {
+			fmt.Println(dis)
+		}
+	}
+
+	fmt.Println("==========")
+	fmt.Println("Param by name")
+	fmt.Println("==========")
+
+	namedParam := ini.GetParamString("insects", "spiderLegs")
+	fmt.Println(namedParam)
+
+	fmt.Println("==========")
+	fmt.Println("Value")
+	fmt.Println("==========")
 
 	//param := ini.GetParamByName("[SECTION1]", "angryByrds")
 
-	value := ini.GetValue("insects", "ColonyPopulation")
+	value := ini.GetParamValue("insects", "spiderLegs")
 	fmt.Println(value)
 
-	fmt.Println("___")
+	fmt.Println("==========")
 
 	sec, val := ini.FindParam("bird3")
 

@@ -104,7 +104,7 @@ func NewParser() *IniParser {
 
 	}
 
-	// Parses int in hexademical
+	// Parses int in hexadecimal
 	parser.Functions[4] = func(value string) interface{} {
 		parsed, _ := strconv.ParseInt(value, BASE0, BITSIZE64)
 		return parsed
@@ -152,8 +152,6 @@ func NewParser() *IniParser {
 
 // Parser main
 func (p *IniParser) ParseValue(value string) interface{} {
-	//var parsed interface{}
-
 	function := p.funcSelect(p.typeChecker(value))
 
 	parsed := function(value)
@@ -205,6 +203,7 @@ func (p *IniParser) typeChecker(value string) int {
 // Checker's methods
 ////////////////////////////////////////////////////
 
+// Hexs checks if string contains hexadecimal number
 func (c Checker) Hexs(value string) bool {
 	var check bool
 
@@ -217,6 +216,7 @@ func (c Checker) Hexs(value string) bool {
 	return check
 }
 
+// Digs checks if string contains digits
 func (c Checker) Digs(value string) bool {
 	for i, char := range value {
 		if i != 0 || string(char) != MINUS {
@@ -230,6 +230,7 @@ func (c Checker) Digs(value string) bool {
 	return true
 }
 
+// Booleans checks if string contains boolean value
 func (c Checker) Booleans(value string) bool {
 	var check bool
 
@@ -244,6 +245,7 @@ func (c Checker) Booleans(value string) bool {
 	return check
 }
 
+// Dot checks if string contains dot
 func (c Checker) Dot(value string) bool {
 	var check bool
 
@@ -256,6 +258,7 @@ func (c Checker) Dot(value string) bool {
 	return check
 }
 
+// Minus checks if string contains the minus
 func (c Checker) Minus(value string) bool {
 	var check bool
 
@@ -269,6 +272,7 @@ func (c Checker) Minus(value string) bool {
 	return check
 }
 
+// Comma checks if string contains the slice of strings
 func (c Checker) Comma(value string) bool {
 	var check bool
 
@@ -279,6 +283,7 @@ func (c Checker) Comma(value string) bool {
 	return check
 }
 
+// Mapped checks if string contains map[string]string
 func (c Checker) Mapped(value string) bool {
 	var check bool
 
