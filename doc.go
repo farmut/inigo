@@ -29,7 +29,6 @@ but tries to parse its native data type. Here is the types that Inigo understand
     - Boolean
     - Octal representation of Int
     - Hexadecimal representation of Int
-    - Binary representation of Int
     - String (default)
     - Array (as **Go**'s slice of strings)
     - Map (currently _[string]string_ only)
@@ -197,7 +196,7 @@ See examples of INI files in "example" folder.
 
     ; Other insects have 6 legs
 
-    other_insect_legs=00000110
+    other_insect_legs=06
 
     ; Case of ants
     ColonyPopulation=137540000

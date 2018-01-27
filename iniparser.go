@@ -79,7 +79,7 @@ func NewParser() *IniParser {
 
 	}
 
-	// Parses int in hexadecimal
+	// Parses int64 in hexadecimal
 	parser.Functions[4] = func(value string) interface{} {
 		parsed, _ := strconv.ParseInt(value, BASE0, BITSIZE64)
 		return parsed

@@ -65,12 +65,12 @@ func main() {
 
 	fmt.Println("==========")
 	fmt.Println("Value")
-	fmt.Println("==========")
+	fmt.Println(" ")
 
 	//param := ini.GetParamByName("[SECTION1]", "angryByrds")
 
 	value := ini.GetParamValue("insects", "other_insect_legs")
-	fmt.Println(value)
+	fmt.Println("value: ", value)
 
 	fmt.Println("==========")
 
