@@ -111,11 +111,3 @@ var LOGICS = []string{
 	OR,
 	NOT,
 }
-
-// Constants for bitwise expressions parsing
-var BITS = []string{
-	ORBIT,
-	XORBIT,
-	NOTBIT,
-	ANDBIT,
-}

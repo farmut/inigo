@@ -24,45 +24,20 @@ import (
 	"unicode"
 )
 
-const ENABLED Nbld = true
-
-// Just a Enabled
-type Nbld bool
-
-// Non-instantiated type for value-parsing logic separation.
+// Checker is a data type for logic separation only.
 type Checker struct {
-
-	// Boolean const
-	ENABLED Nbld
 }
 
-// Type representing value-parsing logic. In default case, Inigo stores parameter's
+// Type representing value parsing logic. In default case, Inigo stores parameter's
 // value as string. For recognize it true type and parse it true
 // value IniParser's methods used.
 type IniParser struct {
 
-	// Embedded type Checker gives the methods for pre-parsing value check.
+	// Checker gives the methods for pre-parsing value check.
 	Checker
 
-	// Parse functions selector
+	// Functions is a parse functions selector.
 	Functions map[int]func(string) interface{}
-}
-
-// Parsing functions from strconv package (such as ParseBool(string), ParseUint(string))
-// return parsed value end error value in case of error. But if err is omitted
-// with blank identifyer, functions return 0. To handle errors and (in same time) avoiding program
-// evaluation breaks in cases of errors we may match returned value with 0, and also check if given
-// string not realy "0". If 0 (integer) is returned and string != "0", there is error.
-func ErrCheck(value string) string {
-	var errorString string
-	if value != ZERO {
-		errorString += value + ERROR
-		//errorString +=
-	} else {
-		errorString = NOERROR
-	}
-
-	return errorString
 }
 
 // ErrFatal is a common error handling
@@ -72,32 +47,32 @@ func ErrFatal(err error) {
 	}
 }
 
-// IniParser's constructor
+// NewParser is an IniParser's constructor
 func NewParser() *IniParser {
 	parser := &IniParser{}
 	parser.Functions = make(map[int]func(string) interface{})
 
 	// Parses boolean
 	parser.Functions[0] = func(value string) interface{} {
-		var parsed bool // E.g. error
+		var parsed bool
 		parsed, _ = strconv.ParseBool(value)
 		return parsed
 	}
 
-	// Parses int
+	// Parses int64
 	parser.Functions[1] = func(value string) interface{} {
 		parsed, _ := strconv.ParseInt(value, BASE0, BITSIZE64)
 		return parsed
 	}
 
-	// Parses uint
+	// Parses uint64
 	parser.Functions[2] = func(value string) interface{} {
 		parsed, _ := strconv.ParseUint(value, BASE0, BITSIZE64)
 		return parsed
 
 	}
 
-	// Parses float
+	// Parses float64
 	parser.Functions[3] = func(value string) interface{} {
 		parsed, _ := strconv.ParseFloat(value, BITSIZE64)
 		return parsed
@@ -159,6 +134,8 @@ func (p *IniParser) ParseValue(value string) interface{} {
 	return parsed
 }
 
+// funcSelect chooses IniParser's function by given number. Number it is IniParser.Functions
+// key returned by typeChecker().
 func (p *IniParser) funcSelect(num int) func(string) interface{} {
 	var function func(value string) interface{}
 	if num < len(p.Functions) {
@@ -168,6 +145,7 @@ func (p *IniParser) funcSelect(num int) func(string) interface{} {
 	return function
 }
 
+// typeChecker makes pre-check of the value's type.
 func (p *IniParser) typeChecker(value string) int {
 	var counted int
 	switch {
@@ -299,7 +277,3 @@ func (c Checker) Mapped(value string) bool {
 
 	return check
 }
-
-//  |⛀ ⛂ ⛀|
-//  |⛀ ⛀ ⛂|
-//  |⛂ ⛂ ⛂|

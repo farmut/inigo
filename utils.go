@@ -105,7 +105,7 @@ func splitParamString(paramString string) []string {
 	return splitted
 }
 
-// Join []string to string with "=" as delimiter
+// joinParamStrings joins []string to string with "=" as delimiter
 func joinParamStrings(creds []string) string {
 	paramString := strings.Join(creds, EQUAL)
 

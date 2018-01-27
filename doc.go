@@ -14,15 +14,38 @@
 //////////////////////////////////////////////////////////////////////////
 
 /*
-Package inigo is an INI files parsing library for Golang applications. It use wide range of recognised
-options trying to enhance common INI syntax.
+Package inigo is an INI files parsing library for Golang applications with wide
+range of parsed data types.
+
+Inigo's features:
+
+* Inigo parses disabled (commented) parameters of INI file as well as enabled ones.
+* Unlike some others INI parsers, Inigo recognizes parameter's value not just as string,
+but tries to parse its native data type. Here is the types that Inigo understands:
+
+    - Int64
+    - Uint64
+    - Float64
+    - Boolean
+    - Octal representation of Int
+    - Hexadecimal representation of Int
+    - Binary representation of Int
+    - String (default)
+    - Array (as **Go**'s slice of strings)
+    - Map (currently _[string]string_ only)
+
+ * Inigo also parses ini file's parameters with syntax errors and stores its as special data type.
+ * Inifo it is INI parser, not editor. For INI files editing use your preferred
+ text editor (Vim is great!)
+
+About INI files
 
 Short info about INI files from Wikipedia (https://en.wikipedia.org/wiki/INI_file):
 
 "The INI files format is an informal standard for configuration files for some platforms or software.
 INI files are simple text files with a basic structure composed of sections, properties, and values.
 The name "INI file" comes from the commonly used filename extension .INI, which stands for
-_"initialization"_.
+"initialization".
 
 In MS-DOS and 16-bit Windows platforms up through Windows ME, the INI files served as the primary
 mechanism to configure operating system and installed applications features, such as device drivers,
@@ -41,6 +64,10 @@ both Windows and Linux systems".
 
 Ini file format
 
+The INI files format is not well defined. Many programs support features beyond the basics described
+above. The following is a list of some common features, which may or may not be implemented in any
+given program.
+
 Inigo use next conception and rules of INI syntax:
 
 1. Ini file structure
@@ -49,13 +76,21 @@ Inigo use next conception and rules of INI syntax:
 
         ; commented line
 
+            param0=value0
+
         [SECTION1]
 
+        ; commented line
+
             PARAM1=value1
+
+        ; commented line
 
             PARAM1=value2
 
         [SECTION2]
+
+        ; commented line
 
             PARAM3=value3
 
@@ -68,99 +103,58 @@ line by itself, in square brackets "[" and "]". All keys after the section decla
 with that section. There is no explicit "end of section" delimiter so sections end at the next
 section declaration, or the end of the file. Sections may not be nested.
 
-Note: In the Windows implementation the section cannot contain the character closing bracket "]".
-
     [section]
     a=a
     b=b
 
 3. Parameters
 
-In common cases parameter names parses as string always. But Inigo breaks this rule and parse
-underlying value of parameter. So parsed value may be:
+In common cases parameter names parses as string.
 
-- Int
-- Uint
-- Int in hexademical, octal or binary representation
-- Boolean
-- Floats
-- String (default)
-- Array (e.g Golang slice) of strings
-- Map [string]string
-
-Parameter name may contains any symbols except space.
+Parameter name may contains any symbols except space. Trailing spaces at the end of parameter name
+are ignored.
 
     parameter1="Iggy Pop"
     new parameter=20.6465 // Error
 
-Note: In the Windows implementation the key cannot contain the characters equal sign "=" or semicolon
- ";" as these are reserved characters. The _value_ can contain any character.
+The value can contain any character but if STRING value contains the spaces, such value must
+be doublequotted. Otherwise value will be parsed as error.
 
-Case insensitivity
+    parameter1=Iggy Pop // Error also
 
-Section and key _names_ are not case sensitive in the Windows implementation.
+Leading space at begin of parameter value are ignored.
 
-Comments
+    parameter1 = "Iggy Pop"
+    parameter= 20.6465
 
-_Semicolons_ ";" at the beginning of the line indicate a comment. Comment lines are ignored.
+4. Comments
+
+Semicolons ";" and sharp "#" (the UNIX style comments) at the beginning of the line indicate a comment.
+Commented lines are ignored.
 
     ; commented string
     # Unix-style commented string
 
-4. Varying features
+Inline comments with ";" and "#" is also recognized by Inigo.
 
-The INI files format is not well defined. Many programs support features beyond the basics described
-above. The following is a list of some common features, which may or may not be implemented in any
-given program.
+    param=value ; inline comment are ignored
+    param=value # inline comment are ignored
 
-Blank lines
+5. Blank lines
 
 Some rudimentary programs do not allow blank lines. Every line must therefore be a section head, a
-parameter, or a comment. Inigo ignores blank lines founded.
+parameter, or a comment. Inigo ignores blank lines.
 
-Unix-style comments
+6. Compound data types
 
-Some software supports the use of the _number sign_ "#" as an alternative to the _semicolon_ for indicating
-comments. Practically speaking, using it to begin a line may effectively change a variable name on that
-line. For instance, the following line creates a variable named "#var", but not one named "var"; this
-is sometimes used to create a pseudo-implementation of a comment.
+Inigo parses next compound data types:
+* arrays as Go's slices of strings. In this case parameter's value must looks as
 
-    #var=a
+    slice=first, second, third
 
-More generally, use of the _number sign_ is unpredictable, as in these following lines (note the _space_
-after the number sign in the second line). For this reason, the _number sign_ character should not be used
-to begin comments.
+* map[string]string. In this case parameter's value must looks as
 
-Unlike this, Inigo parses Unix-style comment as ordinary comment with ";".
-
-    #[section]
-    # var=a
-    # Unix-style comment
-
-Duplicate names
-
-Most implementations only support having one parameter with a given name in a section. The second
-occurrence of a parameter _name_ may cause an abort, it may be ignored (and the _value_ discarded), or
-it may override the first occurrence (with the first _value_ discarded). Some programs use duplicate
-parameters names to implement multi-valued properties.
-
-Interpretation of multiple section declarations with the same name also varies. In some implementations,
-duplicate sections simply merge their _properties_ together, as if they occurred contiguously. Others may
-abort, or ignore some aspect of the INI files.
-
-Arrays
-
-Russian version https://ru.wikipedia.org/wiki/.ini of Wikipedia article shows an examples of
-working with arrays in INI files as Zend Framework do:
-
-    ; in Zend Framework array is determined as in next statement
-    [Section3]
-    var1[]=значение_1_1
-    var1[]=значение_1_2
-    var1[]=значение_1_3
-    var2=значение_2
-
-But Inigo don't recognize such syntax.
+    map=first:value1, second:value2, third:value3
 
 Examples of INI files
 
