@@ -39,7 +39,7 @@ type Sections struct {
 	SectionsMap map[string]*Params
 }
 
-// Inifile is a main data type. It is also API methods reciever. Contains Sections field.
+// Inifile is a main data type. It is also API methods receiver. Contains Sections field.
 type Inifile struct {
 
 	// Sections is a Map [section_name]parameter_block.

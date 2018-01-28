@@ -35,13 +35,13 @@ const (
 	BASE16     = 0x10
 )
 
-// Constants for parsing errors handling
+// Constants for parsing errors
 const (
 	ERROR   string = "; PARSING ERROR"
 	NOERROR        = "NOERROR"
 )
 
-// Usefull string constants
+// Useful string constants
 const (
 	COMMA      string = ","
 	ONE               = "1"

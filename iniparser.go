@@ -18,7 +18,6 @@
 package inigo
 
 import (
-	"log"
 	"strconv"
 	"strings"
 	"unicode"
@@ -38,13 +37,6 @@ type IniParser struct {
 
 	// Functions is a parse functions selector.
 	Functions map[int]func(string) interface{}
-}
-
-// ErrFatal is a common error handling
-func ErrFatal(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 // NewParser is an IniParser's constructor
@@ -93,12 +85,15 @@ func NewParser() *IniParser {
 
 	// Parses slice of strings
 	parser.Functions[6] = func(value string) interface{} {
-		parsed := strings.Split(value, COMMA)
+		preparsed := strings.Split(value, COMMA)
+		var parsed []string
 
-		for _, p := range parsed {
+		for _, p := range preparsed {
 			if string(p[0]) == SPACE {
 				p = strings.TrimPrefix(p, SPACE)
 			}
+
+			parsed = append(parsed, p)
 		}
 
 		return parsed
@@ -125,7 +120,7 @@ func NewParser() *IniParser {
 // IniParser's methods
 //////////////////////////////////////////////
 
-// Parser main
+// Parser of parameter's value
 func (p *IniParser) ParseValue(value string) interface{} {
 	function := p.funcSelect(p.typeChecker(value))
 
@@ -200,7 +195,6 @@ func (c Checker) Digs(value string) bool {
 		if i != 0 || string(char) != MINUS {
 			if unicode.IsDigit(char) == false && string(char) != DOT {
 				return unicode.IsDigit(char)
-				break
 			}
 		}
 	}
@@ -216,7 +210,6 @@ func (c Checker) Booleans(value string) bool {
 		if value == boo {
 			check = true
 			return check
-			break
 		}
 	}
 

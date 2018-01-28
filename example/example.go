@@ -23,12 +23,10 @@ import (
 
 func main() {
 	filename := "example.ini"
-	//filename := "short.ini"
-	//filename := "example_php.ini"
 
 	ini := inigo.NewIniFile(filename)
 
-	fmt.Println("==========")
+	fmt.Println(" ")
 	fmt.Println("Sections")
 	fmt.Println("==========")
 
@@ -36,7 +34,7 @@ func main() {
 	for _, sec := range secs {
 		fmt.Println(sec)
 	}
-	fmt.Println("==========")
+	fmt.Println(" ")
 	fmt.Println("All params")
 	fmt.Println("==========")
 
@@ -45,7 +43,7 @@ func main() {
 		fmt.Println(param)
 	}
 
-	fmt.Println("==========")
+	fmt.Println(" ")
 	fmt.Println("Disabled params")
 	fmt.Println("==========")
 
@@ -56,28 +54,32 @@ func main() {
 		}
 	}
 
-	fmt.Println("==========")
+	fmt.Println(" ")
 	fmt.Println("Param by name")
 	fmt.Println("==========")
 
 	namedParam := ini.GetParamString("insects", "spiderLegs")
 	fmt.Println(namedParam)
 
-	fmt.Println("==========")
-	fmt.Println("Value")
 	fmt.Println(" ")
-
-	//param := ini.GetParamByName("[SECTION1]", "angryByrds")
+	fmt.Println("Value")
+	fmt.Println("==========")
 
 	value := ini.GetParamValue("insects", "other_insect_legs")
 	fmt.Println("value: ", value)
+	value1 := ini.GetParamValue("Birds", "pseudoBirds")
+	fmt.Println("value1: ", value1)
 
+	fmt.Println(" ")
+	fmt.Println("Param by name")
 	fmt.Println("==========")
 
 	sec, val := ini.FindParam("bird3")
 
 	fmt.Println(sec, val)
 
+	fmt.Println(" ")
+	fmt.Println("Errors")
 	fmt.Println("==========")
 
 	errors := ini.GetErrors()
