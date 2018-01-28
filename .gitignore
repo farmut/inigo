@@ -57,6 +57,7 @@ sftp-config.json
 build.sh
 /notes/*
 inigo
+/example/example
 change.log
 README.e.md
 .version.sh
