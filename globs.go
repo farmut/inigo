@@ -35,7 +35,7 @@ const (
 	BASE16     = 0x10
 )
 
-// Constants for parsing errors handling
+// Constants for parsing errors
 const (
 	ERROR   string = "; PARSING ERROR"
 	NOERROR        = "NOERROR"
