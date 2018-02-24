@@ -33,8 +33,8 @@ but tries to parse its native data type. Here is the types that Inigo understand
     - Array (as **Go**'s slice of strings)
     - Map (currently _[string]string_ only)
 
- * Inigo also parses ini file's parameters with syntax errors and stores its as special data type.
- * Inifo it is INI parser, not editor. For INI files editing use your preferred
+* Inigo also parses ini file's parameters with syntax errors and stores its as special data type.
+* Inigo it is INI parser, not editor. For INI files editing use your preferred
  text editor (Vim is great!)
 
 About INI files

@@ -10,9 +10,7 @@
     ╚═╝╚═╝  ╚═══╝╚═╝ ╚═════╝  ╚═════╝ 
         ___.ini files parser___
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/hIMEI29A/inigo)](https://goreportcard.com/report/github.com/hIMEI29A/inigo) [![GoDoc](https://godoc.org/github.com/hIMEI29A/inigo?status.svg)](http://godoc.org/github.com/hIMEI29A/inigo)
-
-
+[![Go Report Card](https://goreportcard.com/badge/github.com/hIMEI29A/inigo)](https://goreportcard.com/report/github.com/hIMEI29A/inigo) [![GoDoc](https://godoc.org/github.com/hIMEI29A/inigo?status.svg)](http://godoc.org/github.com/hIMEI29A/inigo) [![Apache-2.0 License](https://img.shields.io/badge/license-Apache--2.0-red.svg)](LICENSE)
 
 ## TOC
 
@@ -40,14 +38,14 @@
     - Array (as **Go**'s slice of strings)
     - Map (currently _[string]string_ only)
  
- * **Inigo** also parses ini file's parameters with syntax errors and stores its as special data type
- * **Inifo** it is INI parser, **not editor**. For INI files editing use your preferred text editor (Vim is great!)
+* **Inigo** also parses ini file's parameters with syntax errors and stores its as special data type
+* **Inigo** it is INI parser, **not editor**. For INI files editing use your preferred text editor (Vim is great!)
  
 For details of used INI syntax see package's documentation.
 
 ## License
 
-[![Apache-2.0 License](http://img.shields.io/badge/License-Apache-2.0-yellow.svg)](LICENSE)
+Apache-2.0 License
 
 ## Version
 
